@@ -19,7 +19,9 @@ namespace cs432_Project_Server
     {
         string RSAxmlKey3072;
         string password = "Bohemian";
-        byte[] sha256 = hashWithSHA384("TheForce");
+        byte[] sha256;
+        byte[] byteKey = new byte[16];
+        byte[] byteIV = new byte[16];
 
         bool terminating = false;
         bool listening = false;
@@ -33,8 +35,18 @@ namespace cs432_Project_Server
             Control.CheckForIllegalCrossThreadCalls = false;
             this.FormClosing += new FormClosingEventHandler(Form1_FormClosing);
             InitializeComponent();
-            readKey();
+            sha256 = hashWithSHA256(password);
+            getKeyAndIV();
+            RSAxmlKey3072 = readRSAKeyPairs();
+
         }
+
+        private void getKeyAndIV()
+        {
+            Array.Copy(sha256, 16, byteKey, 0, 16);
+            Array.Copy(sha256, 0, byteIV, 0, 16);
+        }
+
         //listenButton
         private void button1_Click(object sender, EventArgs e)
         {
@@ -123,36 +135,40 @@ namespace cs432_Project_Server
             {
                 try
                 {
-                    Byte[] buffer = new Byte[64];
+                    Byte[] buffer = new Byte[512];
                     s.Receive(buffer);
 
                     string incomingMessage = Encoding.Default.GetString(buffer);
                     incomingMessage = incomingMessage.Substring(0, incomingMessage.IndexOf("\0"));
-                    logs.AppendText(incomingMessage + "\n");
 
-                    if (remoteConnected)
-                    {
-                        try
-                        {
-                            remoteSocket.Send(buffer);
+                    byte[] byteInput = Encoding.Default.GetBytes(incomingMessage);
+                    logs.AppendText(Encoding.Default.GetString(byteInput) + "\n");
 
-                            buffer = new Byte[64];
-                            remoteSocket.Receive(buffer);
+                    //logs.AppendText(incomingMessage + "\n");
 
-                            s.Send(buffer);
-                        }
-                        catch
-                        {
-                            remoteConnected = false;
-                            remoteSocket = null;
-                            connectButton.Enabled = true;
-                        }
-                    }
-                    else
-                    {
-                        logs.AppendText("Not connected to remote server");
-                    }
 
+                    //if (remoteConnected)
+                    //{
+                    //    try
+                    //    {
+                    //        remoteSocket.Send(buffer);
+
+                    //        buffer = new Byte[64];
+                    //        remoteSocket.Receive(buffer);
+
+                    //        s.Send(buffer);
+                    //    }
+                    //    catch
+                    //    {
+                    //        remoteConnected = false;
+                    //        remoteSocket = null;
+                    //        connectButton.Enabled = true;
+                    //    }
+                    //}
+                    //else
+                    //{
+                    //    logs.AppendText("Not connected to remote server");
+                    //}
                 }
                 catch
                 {
@@ -167,18 +183,19 @@ namespace cs432_Project_Server
                 }
             }
         }
-        private String readKey()
+        private string readRSAKeyPairs()
         {
             String encryptedString;
+            string RSAKeyPairs;
             using (System.IO.StreamReader fileReader = new System.IO.StreamReader("../encrypted_server_enc_dec_pub_prv.txt"))
             {
                 encryptedString = Encoding.Default.GetString(hexStringToByteArray(fileReader.ReadLine()));
-                byte[] decryptedAES128 = decryptWithAES128(encryptedString, byteKey128, byteIV);
+                byte[] decryptedAES128 = decryptWithAES128(encryptedString, byteKey, byteIV);
+                RSAKeyPairs = Encoding.Default.GetString(decryptedAES128);
                 Console.WriteLine("AES128 Decryption:");
-                Console.WriteLine(Encoding.Default.GetString(decryptedAES128));
+                Console.WriteLine(RSAKeyPairs);
             }
-            Debug.Print(encryptedString);
-            return encryptedString;
+            return RSAKeyPairs;
         }
         public static byte[] hexStringToByteArray(string hex)
         {

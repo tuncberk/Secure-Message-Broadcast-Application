@@ -43,6 +43,7 @@
             this.logs = new System.Windows.Forms.RichTextBox();
             this.passwordLogin = new System.Windows.Forms.TextBox();
             this.label6 = new System.Windows.Forms.Label();
+            this.connectButton = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // ipAdress
@@ -61,21 +62,21 @@
             // 
             // username
             // 
-            this.username.Location = new System.Drawing.Point(74, 63);
+            this.username.Location = new System.Drawing.Point(74, 129);
             this.username.Name = "username";
             this.username.Size = new System.Drawing.Size(100, 20);
             this.username.TabIndex = 2;
             // 
             // password
             // 
-            this.password.Location = new System.Drawing.Point(74, 89);
+            this.password.Location = new System.Drawing.Point(74, 155);
             this.password.Name = "password";
             this.password.Size = new System.Drawing.Size(100, 20);
             this.password.TabIndex = 3;
             // 
             // usernameLogin
             // 
-            this.usernameLogin.Location = new System.Drawing.Point(74, 174);
+            this.usernameLogin.Location = new System.Drawing.Point(74, 239);
             this.usernameLogin.Name = "usernameLogin";
             this.usernameLogin.Size = new System.Drawing.Size(100, 20);
             this.usernameLogin.TabIndex = 4;
@@ -101,7 +102,7 @@
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(13, 70);
+            this.label3.Location = new System.Drawing.Point(13, 136);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(55, 13);
             this.label3.TabIndex = 7;
@@ -110,7 +111,7 @@
             // label4
             // 
             this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(12, 97);
+            this.label4.Location = new System.Drawing.Point(12, 163);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(53, 13);
             this.label4.TabIndex = 8;
@@ -119,7 +120,7 @@
             // label5
             // 
             this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(13, 181);
+            this.label5.Location = new System.Drawing.Point(13, 246);
             this.label5.Name = "label5";
             this.label5.Size = new System.Drawing.Size(55, 13);
             this.label5.TabIndex = 9;
@@ -127,7 +128,8 @@
             // 
             // enrollButton
             // 
-            this.enrollButton.Location = new System.Drawing.Point(74, 115);
+            this.enrollButton.Enabled = false;
+            this.enrollButton.Location = new System.Drawing.Point(74, 181);
             this.enrollButton.Name = "enrollButton";
             this.enrollButton.Size = new System.Drawing.Size(75, 23);
             this.enrollButton.TabIndex = 10;
@@ -137,7 +139,8 @@
             // 
             // loginButton
             // 
-            this.loginButton.Location = new System.Drawing.Point(74, 226);
+            this.loginButton.Enabled = false;
+            this.loginButton.Location = new System.Drawing.Point(74, 291);
             this.loginButton.Name = "loginButton";
             this.loginButton.Size = new System.Drawing.Size(75, 23);
             this.loginButton.TabIndex = 11;
@@ -155,7 +158,7 @@
             // 
             // passwordLogin
             // 
-            this.passwordLogin.Location = new System.Drawing.Point(74, 200);
+            this.passwordLogin.Location = new System.Drawing.Point(74, 265);
             this.passwordLogin.Name = "passwordLogin";
             this.passwordLogin.Size = new System.Drawing.Size(100, 20);
             this.passwordLogin.TabIndex = 13;
@@ -163,17 +166,28 @@
             // label6
             // 
             this.label6.AutoSize = true;
-            this.label6.Location = new System.Drawing.Point(13, 207);
+            this.label6.Location = new System.Drawing.Point(13, 272);
             this.label6.Name = "label6";
             this.label6.Size = new System.Drawing.Size(53, 13);
             this.label6.TabIndex = 14;
             this.label6.Text = "Password";
             // 
+            // connectButton
+            // 
+            this.connectButton.Location = new System.Drawing.Point(74, 64);
+            this.connectButton.Name = "connectButton";
+            this.connectButton.Size = new System.Drawing.Size(75, 23);
+            this.connectButton.TabIndex = 15;
+            this.connectButton.Text = "Connect";
+            this.connectButton.UseVisualStyleBackColor = true;
+            this.connectButton.Click += new System.EventHandler(this.connectButton_Click);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(381, 261);
+            this.ClientSize = new System.Drawing.Size(381, 326);
+            this.Controls.Add(this.connectButton);
             this.Controls.Add(this.label6);
             this.Controls.Add(this.passwordLogin);
             this.Controls.Add(this.logs);
@@ -213,6 +227,7 @@
         private System.Windows.Forms.RichTextBox logs;
         private System.Windows.Forms.TextBox passwordLogin;
         private System.Windows.Forms.Label label6;
+        private System.Windows.Forms.Button connectButton;
     }
 }
 

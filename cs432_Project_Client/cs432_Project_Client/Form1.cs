@@ -10,11 +10,18 @@ using System.Windows.Forms;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
+using System.Security.Cryptography;
 
 namespace cs432_Project_Client
 {
     public partial class Form1 : Form
     {
+        string RSAPublicKey3072_encryption;
+        string RSAPublicKey3072_verification;
+        byte[] sha256;
+        byte[] message;
+        string messageStr;
+
         bool terminating = false;
         bool connected = false;
         Socket clientSocket;
@@ -23,9 +30,11 @@ namespace cs432_Project_Client
             Control.CheckForIllegalCrossThreadCalls = false;
             this.FormClosing += new FormClosingEventHandler(Form1_FormClosing);
             InitializeComponent();
-        }
+            RSAPublicKey3072_encryption = readRSAPublicKey_encryption();
+            RSAPublicKey3072_verification = readRSAPublicKey_verification();
 
-        private void enrollButton_Click(object sender, EventArgs e)
+        }
+        private void connectButton_Click(object sender, EventArgs e)
         {
             clientSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
             string IP = ipAdress.Text;
@@ -35,7 +44,8 @@ namespace cs432_Project_Client
                 try
                 {
                     clientSocket.Connect(IP, port);
-                    enrollButton.Enabled = false;
+                    enrollButton.Enabled = true;
+                    loginButton.Enabled = true;
                     connected = true;
                     logs.AppendText("Connected to server\n");
 
@@ -52,6 +62,38 @@ namespace cs432_Project_Client
             {
                 logs.AppendText("Check the port\n");
             }
+        }
+        private void enrollButton_Click(object sender, EventArgs e)
+        {
+            string pass = password.Text;
+            sha256 = hashWithSHA256(pass);
+            concatenateHashWithUsername();
+            encryptMessage();
+            sendEncryptedMessage();
+        }
+
+        private void encryptMessage()
+        {
+            messageStr = generateHexStringFromByteArray(message);
+            byte[] encryptedRSA = encryptWithRSA(messageStr, 3072, RSAPublicKey3072_encryption);
+            Console.WriteLine("RSA 4096 Encryption:");
+            Console.WriteLine(generateHexStringFromByteArray(encryptedRSA));
+            Console.WriteLine(encryptedRSA.Length);
+
+        }
+        public static string generateHexStringFromByteArray(byte[] input)
+        {
+            string hexString = BitConverter.ToString(input);
+            return hexString.Replace("-", "");
+        }
+        private void concatenateHashWithUsername()
+        {
+            message = new byte[64];
+            byte[] byteUsername = Encoding.Default.GetBytes(username.Text);
+            int byteLength = byteUsername.Length;
+            Console.WriteLine(byteLength);
+            Array.Copy(sha256, 16, message, 0, 16);
+            Array.Copy(byteUsername, 0, message, 16, byteLength);
         }
 
         private void Receive()
@@ -99,14 +141,66 @@ namespace cs432_Project_Client
             //    clientSocket.Send(buffer);
             //}
         }
-        private void readKey()
+        private string readRSAPublicKey_encryption()
         {
-            string plaintext;
-            using (System.IO.StreamReader fileReader =
-            new System.IO.StreamReader("../plaintext.txt"))
+            string RSAPublicKey3072;
+            using (System.IO.StreamReader fileReader = new System.IO.StreamReader("../server_enc_dec_pub.txt"))
             {
-                plaintext = fileReader.ReadLine();
+                RSAPublicKey3072 = fileReader.ReadLine();
             }
+            return RSAPublicKey3072;
         }
+        private string readRSAPublicKey_verification()
+        {
+            string RSAPublicKey3072;
+            using (System.IO.StreamReader fileReader = new System.IO.StreamReader("../server_signing_verification_pub.txt"))
+            {
+                RSAPublicKey3072 = fileReader.ReadLine();
+            }
+            return RSAPublicKey3072;
+        }
+        static byte[] hashWithSHA256(string input)
+        {
+            // convert input string to byte array
+            byte[] byteInput = Encoding.Default.GetBytes(input);
+            // create a hasher object from System.Security.Cryptography
+            SHA256CryptoServiceProvider sha256Hasher = new SHA256CryptoServiceProvider();
+            // hash and save the resulting byte array
+            byte[] result = sha256Hasher.ComputeHash(byteInput);
+
+            return result;
+        }
+        private void sendEncryptedMessage()
+        {
+            //clientSocket.Send(message);
+            //String message = messageText.Text;
+
+            Byte[] buffer = new Byte[512];
+            buffer = Encoding.Default.GetBytes(messageStr);
+            clientSocket.Send(buffer);
+        }
+        static byte[] encryptWithRSA(string input, int algoLength, string xmlStringKey)
+        {
+            // convert input string to byte array
+            byte[] byteInput = Encoding.Default.GetBytes(input);
+            // create RSA object from System.Security.Cryptography
+            RSACryptoServiceProvider rsaObject = new RSACryptoServiceProvider(algoLength);
+            // set RSA object with xml string
+            rsaObject.FromXmlString(xmlStringKey);
+            byte[] result = null;
+
+            try
+            {
+                //true flag is set to perform direct RSA encryption using OAEP padding
+                result = rsaObject.Encrypt(byteInput, true);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+            }
+
+            return result;
+        }
+
     }
 }

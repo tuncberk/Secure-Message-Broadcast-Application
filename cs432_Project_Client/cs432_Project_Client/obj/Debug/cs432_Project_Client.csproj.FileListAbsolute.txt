@@ -6,3 +6,11 @@ c:\users\berk\documents\visual studio 2015\Projects\cs432_Project_Client\cs432_P
 c:\users\berk\documents\visual studio 2015\Projects\cs432_Project_Client\cs432_Project_Client\bin\Debug\cs432_Project_Client.pdb
 c:\users\berk\documents\visual studio 2015\Projects\cs432_Project_Client\cs432_Project_Client\obj\Debug\cs432_Project_Client.exe
 c:\users\berk\documents\visual studio 2015\Projects\cs432_Project_Client\cs432_Project_Client\obj\Debug\cs432_Project_Client.pdb
+C:\Users\Berk\Documents\Visual Studio 2015\Projects\cs432_Project\cs432_Project_Client\cs432_Project_Client\bin\Debug\cs432_Project_Client.exe.config
+C:\Users\Berk\Documents\Visual Studio 2015\Projects\cs432_Project\cs432_Project_Client\cs432_Project_Client\obj\Debug\cs432_Project_Client.exe
+C:\Users\Berk\Documents\Visual Studio 2015\Projects\cs432_Project\cs432_Project_Client\cs432_Project_Client\obj\Debug\cs432_Project_Client.pdb
+C:\Users\Berk\Documents\Visual Studio 2015\Projects\cs432_Project\cs432_Project_Client\cs432_Project_Client\bin\Debug\cs432_Project_Client.exe
+C:\Users\Berk\Documents\Visual Studio 2015\Projects\cs432_Project\cs432_Project_Client\cs432_Project_Client\bin\Debug\cs432_Project_Client.pdb
+C:\Users\Berk\Documents\Visual Studio 2015\Projects\cs432_Project\cs432_Project_Client\cs432_Project_Client\obj\Debug\cs432_Project_Client.Form1.resources
+C:\Users\Berk\Documents\Visual Studio 2015\Projects\cs432_Project\cs432_Project_Client\cs432_Project_Client\obj\Debug\cs432_Project_Client.Properties.Resources.resources
+C:\Users\Berk\Documents\Visual Studio 2015\Projects\cs432_Project\cs432_Project_Client\cs432_Project_Client\obj\Debug\cs432_Project_Client.csproj.GenerateResource.Cache

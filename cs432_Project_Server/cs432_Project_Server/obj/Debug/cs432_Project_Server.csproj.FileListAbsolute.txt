@@ -7,3 +7,12 @@ c:\users\berk\documents\visual studio 2015\Projects\cs432_Project_Server\cs432_P
 c:\users\berk\documents\visual studio 2015\Projects\cs432_Project_Server\cs432_Project_Server\obj\Debug\cs432_Project_Server.csproj.GenerateResource.Cache
 c:\users\berk\documents\visual studio 2015\Projects\cs432_Project_Server\cs432_Project_Server\obj\Debug\cs432_Project_Server.exe
 c:\users\berk\documents\visual studio 2015\Projects\cs432_Project_Server\cs432_Project_Server\obj\Debug\cs432_Project_Server.pdb
+C:\Users\Berk\Documents\Visual Studio 2015\Projects\cs432_Project\cs432_Project_Server\cs432_Project_Server\bin\Debug\cs432_Project_Server.exe.config
+C:\Users\Berk\Documents\Visual Studio 2015\Projects\cs432_Project\cs432_Project_Server\cs432_Project_Server\obj\Debug\cs432_Project_Server.exe
+C:\Users\Berk\Documents\Visual Studio 2015\Projects\cs432_Project\cs432_Project_Server\cs432_Project_Server\obj\Debug\cs432_Project_Server.pdb
+C:\Users\Berk\Documents\Visual Studio 2015\Projects\cs432_Project\cs432_Project_Server\cs432_Project_Server\bin\Debug\cs432_Project_Server.exe
+C:\Users\Berk\Documents\Visual Studio 2015\Projects\cs432_Project\cs432_Project_Server\cs432_Project_Server\bin\Debug\cs432_Project_Server.pdb
+C:\Users\Berk\Documents\Visual Studio 2015\Projects\cs432_Project\cs432_Project_Server\cs432_Project_Server\obj\Debug\cs432_Project_Server.csprojResolveAssemblyReference.cache
+C:\Users\Berk\Documents\Visual Studio 2015\Projects\cs432_Project\cs432_Project_Server\cs432_Project_Server\obj\Debug\cs432_Project_Server.Form1.resources
+C:\Users\Berk\Documents\Visual Studio 2015\Projects\cs432_Project\cs432_Project_Server\cs432_Project_Server\obj\Debug\cs432_Project_Server.Properties.Resources.resources
+C:\Users\Berk\Documents\Visual Studio 2015\Projects\cs432_Project\cs432_Project_Server\cs432_Project_Server\obj\Debug\cs432_Project_Server.csproj.GenerateResource.Cache
