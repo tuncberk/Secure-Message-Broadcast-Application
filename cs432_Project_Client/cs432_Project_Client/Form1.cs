@@ -20,6 +20,7 @@ namespace cs432_Project_Client
         string RSAPublicKey3072_verification;
         byte[] sha256;
         byte[] message;
+        byte[] encryptedRSA;
         string messageStr;
 
         bool terminating = false;
@@ -74,9 +75,9 @@ namespace cs432_Project_Client
 
         private void encryptMessage()
         {
-            messageStr = generateHexStringFromByteArray(message);
-            byte[] encryptedRSA = encryptWithRSA(messageStr, 3072, RSAPublicKey3072_encryption);
-            Console.WriteLine("RSA 4096 Encryption:");
+            //messageStr = generateHexStringFromByteArray(message);
+            encryptedRSA = encryptWithRSA(messageStr, 3072, RSAPublicKey3072_encryption);
+            Console.WriteLine("RSA 3072 Encryption:");
             Console.WriteLine(generateHexStringFromByteArray(encryptedRSA));
             Console.WriteLine(encryptedRSA.Length);
 
@@ -88,12 +89,15 @@ namespace cs432_Project_Client
         }
         private void concatenateHashWithUsername()
         {
-            message = new byte[64];
-            byte[] byteUsername = Encoding.Default.GetBytes(username.Text);
-            int byteLength = byteUsername.Length;
-            Console.WriteLine(byteLength);
-            Array.Copy(sha256, 16, message, 0, 16);
-            Array.Copy(byteUsername, 0, message, 16, byteLength);
+            int halfLength = sha256.Length / 2;
+            byte[] halfHash = new byte[halfLength];
+            Console.WriteLine("sha length: " + sha256.Length);
+           
+            Array.Copy(sha256, halfLength, halfHash, 0, halfLength);
+         
+            messageStr = username.Text + "/" + generateHexStringFromByteArray(halfHash);
+
+            Console.WriteLine("messagestr: " + messageStr);
         }
 
         private void Receive()
@@ -102,7 +106,7 @@ namespace cs432_Project_Client
             {
                 try
                 {
-                    Byte[] buffer = new Byte[64];
+                    Byte[] buffer = new Byte[384];
                     clientSocket.Receive(buffer);
 
                     string incomingMessage = Encoding.Default.GetString(buffer);
@@ -175,9 +179,10 @@ namespace cs432_Project_Client
             //clientSocket.Send(message);
             //String message = messageText.Text;
 
-            Byte[] buffer = new Byte[512];
-            buffer = Encoding.Default.GetBytes(messageStr);
-            clientSocket.Send(buffer);
+            //Byte[] buffer = new Byte[512];
+            //buffer = Encoding.Default.GetBytes(messageStr);
+            //clientSocket.Send(buffer);
+            clientSocket.Send(encryptedRSA);
         }
         static byte[] encryptWithRSA(string input, int algoLength, string xmlStringKey)
         {

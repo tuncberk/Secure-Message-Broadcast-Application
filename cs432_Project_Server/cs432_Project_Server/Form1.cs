@@ -18,6 +18,7 @@ namespace cs432_Project_Server
     public partial class Form1 : Form
     {
         string RSAxmlKey3072;
+        string RSASignVerifyKey;
         string password = "Bohemian";
         byte[] sha256;
         byte[] byteKey = new byte[16];
@@ -25,10 +26,10 @@ namespace cs432_Project_Server
 
         bool terminating = false;
         bool listening = false;
-        bool remoteConnected = false;
+        //bool remoteConnected = false;
 
         Socket serverSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-        Socket remoteSocket;
+        //Socket remoteSocket;
         List<Socket> socketList = new List<Socket>();
         public Form1()
         {
@@ -38,7 +39,7 @@ namespace cs432_Project_Server
             sha256 = hashWithSHA256(password);
             getKeyAndIV();
             RSAxmlKey3072 = readRSAKeyPairs();
-
+            RSASignVerifyKey = readRSASignVerify();
         }
 
         private void getKeyAndIV()
@@ -72,27 +73,27 @@ namespace cs432_Project_Server
         }
         private void connectButton_Click(object sender, EventArgs e)
         {
-            remoteSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-            string IP = ipAdress.Text;
-            int port;
-            if (Int32.TryParse(portNum.Text, out port))
-            {
-                try
-                {
-                    remoteSocket.Connect(IP, port);
-                    remoteConnected = true;
-                    connectButton.Enabled = false;
-                    logs.AppendText("Connected to remote math server\n");
-                }
-                catch
-                {
-                    logs.AppendText("Could not connect to remote server\n");
-                }
-            }
-            else
-            {
-                logs.AppendText("Check the port\n");
-            }
+        //    remoteSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+        //    string IP = ipAdress.Text;
+        //    int port;
+        //    if (Int32.TryParse(portNum.Text, out port))
+        //    {
+        //        try
+        //        {
+        //            remoteSocket.Connect(IP, port);
+        //            remoteConnected = true;
+        //            connectButton.Enabled = false;
+        //            logs.AppendText("Connected to remote math server\n");
+        //        }
+        //        catch
+        //        {
+        //            logs.AppendText("Could not connect to remote server\n");
+        //        }
+        //    }
+        //    else
+        //    {
+        //        logs.AppendText("Check the port\n");
+        //    }
         }
         private void Form1_FormClosing(object sender, System.ComponentModel.CancelEventArgs e)
         {
@@ -135,14 +136,39 @@ namespace cs432_Project_Server
             {
                 try
                 {
-                    Byte[] buffer = new Byte[512];
+                    Byte[] buffer = new Byte[384];
                     s.Receive(buffer);
+                    //string incomingMessage = generateHexStringFromByteArray(buffer);
 
                     string incomingMessage = Encoding.Default.GetString(buffer);
-                    incomingMessage = incomingMessage.Substring(0, incomingMessage.IndexOf("\0"));
+                    //string incomingMessage = Convert.ToBase64String(buffer);
 
-                    byte[] byteInput = Encoding.Default.GetBytes(incomingMessage);
-                    logs.AppendText(Encoding.Default.GetString(byteInput) + "\n");
+
+                    Console.WriteLine(incomingMessage);
+                    //incomingMessage = incomingMessage.Substring(0, incomingMessage.IndexOf("\0"));
+
+                    byte[] decryptedByteArray = decryptWithRSA(incomingMessage, 3072, RSAxmlKey3072);
+                    string secretMessage = Encoding.Default.GetString(decryptedByteArray);
+
+                    Console.WriteLine("Secret message:" + secretMessage);
+                    string username;
+                    string password;
+                    username = secretMessage.Substring(0, secretMessage.IndexOf("/"));
+                    password = secretMessage.Substring(secretMessage.IndexOf("/") + 1);
+
+                    Console.WriteLine("username: " + username);
+                    Console.WriteLine("password: " + password);
+
+                    bool isUnique = true;
+                    string responseMessage;
+                    byte[] signedRSAmessage;
+                    isUnique =  checkUsernameUnique();
+                    responseMessage = generateResponseMessage(isUnique);
+                    signedRSAmessage = signResponseMessage(responseMessage);
+
+                    //buffer = null;
+                    s.Send(signedRSAmessage);
+                    //sendResponseMessage(signedRSAmessage);
 
                     //logs.AppendText(incomingMessage + "\n");
 
@@ -183,6 +209,36 @@ namespace cs432_Project_Server
                 }
             }
         }
+
+        private void sendResponseMessage(byte[] message)
+        {
+            Console.WriteLine("message length: " + message.Length);
+            serverSocket.Send(message);
+        }
+
+        private byte[] signResponseMessage(string message)
+        {
+            byte[] signedRSA = signWithRSA(message, 3072, RSASignVerifyKey);
+            return signedRSA;
+        }
+
+        private string generateResponseMessage(bool isUnique)
+        {
+            string message;
+            if (isUnique)
+            {
+                message = "success";
+            }
+            else
+                message = "error";
+            return message;
+        }
+
+        private bool checkUsernameUnique()
+        {
+            return true;
+        }
+
         private string readRSAKeyPairs()
         {
             String encryptedString;
@@ -192,10 +248,29 @@ namespace cs432_Project_Server
                 encryptedString = Encoding.Default.GetString(hexStringToByteArray(fileReader.ReadLine()));
                 byte[] decryptedAES128 = decryptWithAES128(encryptedString, byteKey, byteIV);
                 RSAKeyPairs = Encoding.Default.GetString(decryptedAES128);
-                Console.WriteLine("AES128 Decryption:");
+                Console.WriteLine("AES128 Decryption Encr/Decr:");
                 Console.WriteLine(RSAKeyPairs);
             }
             return RSAKeyPairs;
+        }
+        private string readRSASignVerify()
+        {
+            String encryptedString;
+            string RSAKeyPairs;
+            using (System.IO.StreamReader fileReader = new System.IO.StreamReader("../encrypted_server_signing_verification_pub_prv.txt"))
+            {
+                encryptedString = Encoding.Default.GetString(hexStringToByteArray(fileReader.ReadLine()));
+                byte[] decryptedAES128 = decryptWithAES128(encryptedString, byteKey, byteIV);
+                RSAKeyPairs = Encoding.Default.GetString(decryptedAES128);
+                Console.WriteLine("AES128 Decryption Sign/Verify:");
+                Console.WriteLine(RSAKeyPairs);
+            }
+            return RSAKeyPairs;
+        }
+        public static string generateHexStringFromByteArray(byte[] input)
+        {
+            string hexString = BitConverter.ToString(input);
+            return hexString.Replace("-", "");
         }
         public static byte[] hexStringToByteArray(string hex)
         {
@@ -248,6 +323,48 @@ namespace cs432_Project_Server
             SHA256CryptoServiceProvider sha256Hasher = new SHA256CryptoServiceProvider();
             // hash and save the resulting byte array
             byte[] result = sha256Hasher.ComputeHash(byteInput);
+
+            return result;
+        }
+        static byte[] decryptWithRSA(string input, int algoLength, string xmlStringKey)
+        {
+            // convert input string to byte array
+            byte[] byteInput = Encoding.Default.GetBytes(input);
+            // create RSA object from System.Security.Cryptography
+            RSACryptoServiceProvider rsaObject = new RSACryptoServiceProvider(algoLength);
+            // set RSA object with xml string
+            rsaObject.FromXmlString(xmlStringKey);
+            byte[] result = null;
+
+            try
+            {
+                result = rsaObject.Decrypt(byteInput, true);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+            }
+
+            return result;
+        }
+        static byte[] signWithRSA(string input, int algoLength, string xmlString)
+        {
+            // convert input string to byte array
+            byte[] byteInput = Encoding.Default.GetBytes(input);
+            // create RSA object from System.Security.Cryptography
+            RSACryptoServiceProvider rsaObject = new RSACryptoServiceProvider(algoLength);
+            // set RSA object with xml string
+            rsaObject.FromXmlString(xmlString);
+            byte[] result = null;
+
+            try
+            {
+                result = rsaObject.SignData(byteInput, "SHA256");
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+            }
 
             return result;
         }
