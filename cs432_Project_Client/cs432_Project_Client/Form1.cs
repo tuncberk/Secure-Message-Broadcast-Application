@@ -143,7 +143,7 @@ namespace cs432_Project_Client
             string username = usernameLogin.Text;
             string password = passwordLogin.Text;
 
-            if (username != "" && password != "" && message.Length < 63)
+            if (username != "" && password != "")
             {
                 Byte[] buffer = new Byte[386];
                 string msg = "/A" + username;

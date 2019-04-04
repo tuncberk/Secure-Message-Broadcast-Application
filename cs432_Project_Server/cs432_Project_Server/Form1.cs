@@ -178,6 +178,10 @@ namespace cs432_Project_Server
 
                         //logs.AppendText(incomingMessage + "\n");
                     }
+                    else if (messageCode == "/A")
+                    {
+                        incomingMessage = incomingMessage.Substring(0, incomingMessage.IndexOf("\0"));
+                    }
 
                 }
                 catch
