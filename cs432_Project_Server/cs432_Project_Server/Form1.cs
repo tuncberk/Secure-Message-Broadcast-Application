@@ -138,65 +138,47 @@ namespace cs432_Project_Server
             {
                 try
                 {
-                    Byte[] buffer = new Byte[384];
+                    Byte[] buffer = new Byte[386];
                     s.Receive(buffer);
+
                     //string incomingMessage = generateHexStringFromByteArray(buffer);
 
                     string incomingMessage = Encoding.Default.GetString(buffer);
                     //string incomingMessage = Convert.ToBase64String(buffer);
+                    string messageCode = incomingMessage.Substring(0, 2);
+                    incomingMessage = incomingMessage.Substring(2);
 
 
                     Console.WriteLine(incomingMessage);
                     //incomingMessage = incomingMessage.Substring(0, incomingMessage.IndexOf("\0"));
+                    if(messageCode == "/E")
+                    {
+                        byte[] decryptedByteArray = decryptWithRSA(incomingMessage, 3072, RSAxmlKey3072);
+                        string secretMessage = Encoding.Default.GetString(decryptedByteArray);
 
-                    byte[] decryptedByteArray = decryptWithRSA(incomingMessage, 3072, RSAxmlKey3072);
-                    string secretMessage = Encoding.Default.GetString(decryptedByteArray);
+                        Console.WriteLine("Secret message:" + secretMessage);
+                        string username;
+                        string password;
+                        username = secretMessage.Substring(0, secretMessage.IndexOf("/"));
+                        password = secretMessage.Substring(secretMessage.IndexOf("/") + 1);
 
-                    Console.WriteLine("Secret message:" + secretMessage);
-                    string username;
-                    string password;
-                    username = secretMessage.Substring(0, secretMessage.IndexOf("/"));
-                    password = secretMessage.Substring(secretMessage.IndexOf("/") + 1);
+                        Console.WriteLine("username: " + username);
+                        Console.WriteLine("password: " + password);
 
-                    Console.WriteLine("username: " + username);
-                    Console.WriteLine("password: " + password);
+                        bool isUnique = true;
+                        string responseMessage;
+                        byte[] signedRSAmessage;
+                        isUnique = checkUsernameUnique(username, password);
+                        responseMessage = generateResponseMessage(isUnique);
+                        signedRSAmessage = signResponseMessage(responseMessage);
 
-                    bool isUnique = true;
-                    string responseMessage;
-                    byte[] signedRSAmessage;
-                    isUnique =  checkUsernameUnique(username, password);
-                    responseMessage = generateResponseMessage(isUnique);
-                    signedRSAmessage = signResponseMessage(responseMessage);
+                        //buffer = null;
+                        s.Send(signedRSAmessage);
+                        //sendResponseMessage(signedRSAmessage);
 
-                    //buffer = null;
-                    s.Send(signedRSAmessage);
-                    //sendResponseMessage(signedRSAmessage);
+                        //logs.AppendText(incomingMessage + "\n");
+                    }
 
-                    //logs.AppendText(incomingMessage + "\n");
-
-
-                    //if (remoteConnected)
-                    //{
-                    //    try
-                    //    {
-                    //        remoteSocket.Send(buffer);
-
-                    //        buffer = new Byte[64];
-                    //        remoteSocket.Receive(buffer);
-
-                    //        s.Send(buffer);
-                    //    }
-                    //    catch
-                    //    {
-                    //        remoteConnected = false;
-                    //        remoteSocket = null;
-                    //        connectButton.Enabled = true;
-                    //    }
-                    //}
-                    //else
-                    //{
-                    //    logs.AppendText("Not connected to remote server");
-                    //}
                 }
                 catch
                 {

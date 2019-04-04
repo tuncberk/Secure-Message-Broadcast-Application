@@ -145,8 +145,9 @@ namespace cs432_Project_Client
 
             if (username != "" && password != "" && message.Length < 63)
             {
-                Byte[] buffer = new Byte[64];
-                buffer = Encoding.Default.GetBytes(username);
+                Byte[] buffer = new Byte[386];
+                string msg = "/A" + username;
+                buffer = Encoding.Default.GetBytes(msg);
                 clientSocket.Send(buffer);
             }
         }
@@ -187,6 +188,10 @@ namespace cs432_Project_Client
             //Byte[] buffer = new Byte[512];
             //buffer = Encoding.Default.GetBytes(messageStr);
             //clientSocket.Send(buffer);
+            string str = Encoding.Default.GetString(encryptedRSA);
+            str = "/E" + str;
+            encryptedRSA = Encoding.Default.GetBytes(str);
+            Console.WriteLine(encryptedRSA.Length);
             clientSocket.Send(encryptedRSA);
         }
         static byte[] encryptWithRSA(string input, int algoLength, string xmlStringKey)
