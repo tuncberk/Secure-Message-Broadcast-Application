@@ -152,6 +152,7 @@ namespace cs432_Project_Client
             //    buffer = Encoding.Default.GetBytes(message);
             //    clientSocket.Send(buffer);
             //}
+
         }
         private string readRSAPublicKey_encryption()
         {
@@ -182,6 +183,19 @@ namespace cs432_Project_Client
 
             return result;
         }
+
+        static byte[] applyHMACwithSHA256(string input, byte[] key)
+        {
+            // convert input string to byte array
+            byte[] byteInput = Encoding.Default.GetBytes(input);
+            // create HMAC applier object from System.Security.Cryptography
+            HMACSHA256 hmacSHA256 = new HMACSHA256(key);
+            // get the result of HMAC operation
+            byte[] result = hmacSHA256.ComputeHash(byteInput);
+
+            return result;
+        }
+
         private void sendEncryptedMessage()
         {
             //clientSocket.Send(message);
@@ -236,5 +250,6 @@ namespace cs432_Project_Client
             return result;
         }
 
+     
     }
 }

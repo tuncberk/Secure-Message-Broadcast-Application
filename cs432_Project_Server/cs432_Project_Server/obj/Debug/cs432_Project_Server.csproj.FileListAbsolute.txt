@@ -16,3 +16,13 @@ C:\Users\Berk\Documents\Visual Studio 2015\Projects\cs432_Project\cs432_Project_
 C:\Users\Berk\Documents\Visual Studio 2015\Projects\cs432_Project\cs432_Project_Server\cs432_Project_Server\obj\Debug\cs432_Project_Server.Form1.resources
 C:\Users\Berk\Documents\Visual Studio 2015\Projects\cs432_Project\cs432_Project_Server\cs432_Project_Server\obj\Debug\cs432_Project_Server.Properties.Resources.resources
 C:\Users\Berk\Documents\Visual Studio 2015\Projects\cs432_Project\cs432_Project_Server\cs432_Project_Server\obj\Debug\cs432_Project_Server.csproj.GenerateResource.Cache
+C:\Users\ASUS\Documents\GitHub\Secure-Message-Broadcast-Application\cs432_Project_Server\cs432_Project_Server\bin\Debug\cs432_Project_Server.exe.config
+C:\Users\ASUS\Documents\GitHub\Secure-Message-Broadcast-Application\cs432_Project_Server\cs432_Project_Server\bin\Debug\cs432_Project_Server.exe
+C:\Users\ASUS\Documents\GitHub\Secure-Message-Broadcast-Application\cs432_Project_Server\cs432_Project_Server\bin\Debug\cs432_Project_Server.pdb
+C:\Users\ASUS\Documents\GitHub\Secure-Message-Broadcast-Application\cs432_Project_Server\cs432_Project_Server\obj\Debug\cs432_Project_Server.csprojResolveAssemblyReference.cache
+C:\Users\ASUS\Documents\GitHub\Secure-Message-Broadcast-Application\cs432_Project_Server\cs432_Project_Server\obj\Debug\cs432_Project_Server.Form1.resources
+C:\Users\ASUS\Documents\GitHub\Secure-Message-Broadcast-Application\cs432_Project_Server\cs432_Project_Server\obj\Debug\cs432_Project_Server.Properties.Resources.resources
+C:\Users\ASUS\Documents\GitHub\Secure-Message-Broadcast-Application\cs432_Project_Server\cs432_Project_Server\obj\Debug\cs432_Project_Server.csproj.GenerateResource.Cache
+C:\Users\ASUS\Documents\GitHub\Secure-Message-Broadcast-Application\cs432_Project_Server\cs432_Project_Server\obj\Debug\cs432_Project_Server.csproj.CoreCompileInputs.cache
+C:\Users\ASUS\Documents\GitHub\Secure-Message-Broadcast-Application\cs432_Project_Server\cs432_Project_Server\obj\Debug\cs432_Project_Server.exe
+C:\Users\ASUS\Documents\GitHub\Secure-Message-Broadcast-Application\cs432_Project_Server\cs432_Project_Server\obj\Debug\cs432_Project_Server.pdb

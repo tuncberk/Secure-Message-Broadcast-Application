@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
@@ -17,6 +18,7 @@ namespace cs432_Project_Server
 {
     public partial class Form1 : Form
     {
+      
         string RSAxmlKey3072;
         string RSASignVerifyKey;
         string password = "Bohemian";
@@ -28,6 +30,7 @@ namespace cs432_Project_Server
         bool listening = false;
         //bool remoteConnected = false;
 
+        
         Socket serverSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
         //Socket remoteSocket;
         List<Socket> socketList = new List<Socket>();
@@ -162,12 +165,15 @@ namespace cs432_Project_Server
                     bool isUnique = true;
                     string responseMessage;
                     byte[] signedRSAmessage;
+                    byte[] challenge;
                     isUnique =  checkUsernameUnique();
                     responseMessage = generateResponseMessage(isUnique);
                     signedRSAmessage = signResponseMessage(responseMessage);
 
                     //buffer = null;
                     s.Send(signedRSAmessage);
+                    challenge = GenerateChallenge();
+                    s.Send(challenge);
                     //sendResponseMessage(signedRSAmessage);
 
                     //logs.AppendText(incomingMessage + "\n");
@@ -368,5 +374,16 @@ namespace cs432_Project_Server
 
             return result;
         }
+
+        static byte[] GenerateChallenge()
+        {
+            byte[] bytes = new byte[128];
+            using (var rng = new RNGCryptoServiceProvider())
+            {
+                rng.GetBytes(bytes);
+            }
+
+            return bytes;
+        } 
     }
 }

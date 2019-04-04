@@ -15,3 +15,13 @@ C:\Users\Berk\Documents\Visual Studio 2015\Projects\cs432_Project\cs432_Project_
 C:\Users\Berk\Documents\Visual Studio 2015\Projects\cs432_Project\cs432_Project_Client\cs432_Project_Client\obj\Debug\cs432_Project_Client.Properties.Resources.resources
 C:\Users\Berk\Documents\Visual Studio 2015\Projects\cs432_Project\cs432_Project_Client\cs432_Project_Client\obj\Debug\cs432_Project_Client.csproj.GenerateResource.Cache
 C:\Users\Berk\Documents\Visual Studio 2015\Projects\cs432_Project\cs432_Project_Client\cs432_Project_Client\obj\Debug\cs432_Project_Client.csprojResolveAssemblyReference.cache
+C:\Users\ASUS\Documents\GitHub\Secure-Message-Broadcast-Application\cs432_Project_Client\cs432_Project_Client\bin\Debug\cs432_Project_Client.exe.config
+C:\Users\ASUS\Documents\GitHub\Secure-Message-Broadcast-Application\cs432_Project_Client\cs432_Project_Client\bin\Debug\cs432_Project_Client.exe
+C:\Users\ASUS\Documents\GitHub\Secure-Message-Broadcast-Application\cs432_Project_Client\cs432_Project_Client\bin\Debug\cs432_Project_Client.pdb
+C:\Users\ASUS\Documents\GitHub\Secure-Message-Broadcast-Application\cs432_Project_Client\cs432_Project_Client\obj\Debug\cs432_Project_Client.csprojResolveAssemblyReference.cache
+C:\Users\ASUS\Documents\GitHub\Secure-Message-Broadcast-Application\cs432_Project_Client\cs432_Project_Client\obj\Debug\cs432_Project_Client.Form1.resources
+C:\Users\ASUS\Documents\GitHub\Secure-Message-Broadcast-Application\cs432_Project_Client\cs432_Project_Client\obj\Debug\cs432_Project_Client.Properties.Resources.resources
+C:\Users\ASUS\Documents\GitHub\Secure-Message-Broadcast-Application\cs432_Project_Client\cs432_Project_Client\obj\Debug\cs432_Project_Client.csproj.GenerateResource.Cache
+C:\Users\ASUS\Documents\GitHub\Secure-Message-Broadcast-Application\cs432_Project_Client\cs432_Project_Client\obj\Debug\cs432_Project_Client.csproj.CoreCompileInputs.cache
+C:\Users\ASUS\Documents\GitHub\Secure-Message-Broadcast-Application\cs432_Project_Client\cs432_Project_Client\obj\Debug\cs432_Project_Client.exe
+C:\Users\ASUS\Documents\GitHub\Secure-Message-Broadcast-Application\cs432_Project_Client\cs432_Project_Client\obj\Debug\cs432_Project_Client.pdb
