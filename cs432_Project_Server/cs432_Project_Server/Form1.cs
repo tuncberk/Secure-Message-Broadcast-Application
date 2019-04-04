@@ -13,6 +13,7 @@ using System.Net.Sockets;
 using System.Threading;
 using System.Security.Cryptography;
 using System.Diagnostics;
+using System.Collections;
 
 namespace cs432_Project_Server
 {
@@ -25,6 +26,7 @@ namespace cs432_Project_Server
         byte[] sha256;
         byte[] byteKey = new byte[16];
         byte[] byteIV = new byte[16];
+        Hashtable userInfo = new Hashtable();
 
         bool terminating = false;
         bool listening = false;
@@ -139,16 +141,51 @@ namespace cs432_Project_Server
             {
                 try
                 {
-                    Byte[] buffer = new Byte[384];
+                    Byte[] buffer = new Byte[386];
                     s.Receive(buffer);
+
                     //string incomingMessage = generateHexStringFromByteArray(buffer);
 
                     string incomingMessage = Encoding.Default.GetString(buffer);
                     //string incomingMessage = Convert.ToBase64String(buffer);
+                    string messageCode = incomingMessage.Substring(0, 2);
+                    incomingMessage = incomingMessage.Substring(2);
 
 
                     Console.WriteLine(incomingMessage);
                     //incomingMessage = incomingMessage.Substring(0, incomingMessage.IndexOf("\0"));
+                    if(messageCode == "/E")
+                    {
+                        byte[] decryptedByteArray = decryptWithRSA(incomingMessage, 3072, RSAxmlKey3072);
+                        string secretMessage = Encoding.Default.GetString(decryptedByteArray);
+
+                        Console.WriteLine("Secret message:" + secretMessage);
+                        string username;
+                        string password;
+                        username = secretMessage.Substring(0, secretMessage.IndexOf("/"));
+                        password = secretMessage.Substring(secretMessage.IndexOf("/") + 1);
+
+                        Console.WriteLine("username: " + username);
+                        Console.WriteLine("password: " + password);
+
+                        bool isUnique = true;
+                        string responseMessage;
+                        byte[] signedRSAmessage;
+                        isUnique = checkUsernameUnique(username, password);
+                        responseMessage = generateResponseMessage(isUnique);
+                        signedRSAmessage = signResponseMessage(responseMessage);
+
+                        //buffer = null;
+                        s.Send(signedRSAmessage);
+                        //sendResponseMessage(signedRSAmessage);
+
+                        //logs.AppendText(incomingMessage + "\n");
+                    }
+                    else if (messageCode == "/A")
+                    {
+                        incomingMessage = incomingMessage.Substring(0, incomingMessage.IndexOf("\0"));
+                    }
+
 
                     byte[] decryptedByteArray = decryptWithRSA(incomingMessage, 3072, RSAxmlKey3072);
                     string secretMessage = Encoding.Default.GetString(decryptedByteArray);
@@ -201,6 +238,7 @@ namespace cs432_Project_Server
                     //{
                     //    logs.AppendText("Not connected to remote server");
                     //}
+
                 }
                 catch
                 {
@@ -240,9 +278,14 @@ namespace cs432_Project_Server
             return message;
         }
 
-        private bool checkUsernameUnique()
+        private bool checkUsernameUnique(string username, string password)
         {
-            return true;
+            if (!userInfo.Contains(username))
+            {
+                userInfo.Add(username, password);
+                return true;
+            }
+            return false;
         }
 
         private string readRSAKeyPairs()

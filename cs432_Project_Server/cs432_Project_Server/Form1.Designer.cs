@@ -130,7 +130,7 @@
             this.Controls.Add(this.label1);
             this.Controls.Add(this.clientPort);
             this.Name = "Form1";
-            this.Text = "Form1";
+            this.Text = "Server";
             this.ResumeLayout(false);
             this.PerformLayout();
 

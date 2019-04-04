@@ -46,7 +46,6 @@ namespace cs432_Project_Client
                 {
                     clientSocket.Connect(IP, port);
                     enrollButton.Enabled = true;
-                    loginButton.Enabled = true;
                     connected = true;
                     logs.AppendText("Connected to server\n");
 
@@ -108,17 +107,15 @@ namespace cs432_Project_Client
                 {
                     Byte[] buffer = new Byte[384];
                     clientSocket.Receive(buffer);
-
-                    //string incomingMessage = Encoding.Default.GetString(buffer);
-                    //incomingMessage = incomingMessage.Substring(0, incomingMessage.IndexOf("\0"));
-                    //logs.AppendText(incomingMessage + "\n");
+                    
                     string msg = "success";
                     if (verifyWithRSA(msg, 3072, RSAPublicKey3072_verification, buffer))
                     {
-                        logs.AppendText("Enrollment Successfull");
+                        logs.AppendText("Enrollment Successfull\n");
+                        loginButton.Enabled = true;
                     }
                     else
-                        logs.AppendText("Enrollment Failed");
+                        logs.AppendText("Enrollment Failed\n");
 
                 }
                 catch
@@ -143,6 +140,7 @@ namespace cs432_Project_Client
         private void loginButton_Click(object sender, EventArgs e)
         {
             //String message = messageText.Text;
+
             //String username = usernameLogin.Text;
             //String password = passwordLogin.Text;
 
@@ -152,6 +150,18 @@ namespace cs432_Project_Client
             //    buffer = Encoding.Default.GetBytes(message);
             //    clientSocket.Send(buffer);
             //}
+
+
+            string username = usernameLogin.Text;
+            string password = passwordLogin.Text;
+
+            if (username != "" && password != "")
+            {
+                Byte[] buffer = new Byte[386];
+                string msg = "/A" + username;
+                buffer = Encoding.Default.GetBytes(msg);
+                clientSocket.Send(buffer);
+            }
 
         }
         private string readRSAPublicKey_encryption()
@@ -204,6 +214,10 @@ namespace cs432_Project_Client
             //Byte[] buffer = new Byte[512];
             //buffer = Encoding.Default.GetBytes(messageStr);
             //clientSocket.Send(buffer);
+            string str = Encoding.Default.GetString(encryptedRSA);
+            str = "/E" + str;
+            encryptedRSA = Encoding.Default.GetBytes(str);
+            Console.WriteLine(encryptedRSA.Length);
             clientSocket.Send(encryptedRSA);
         }
         static byte[] encryptWithRSA(string input, int algoLength, string xmlStringKey)

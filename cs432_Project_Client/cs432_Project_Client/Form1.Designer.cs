@@ -204,8 +204,12 @@
             this.Controls.Add(this.portNum);
             this.Controls.Add(this.ipAdress);
             this.Name = "Form1";
+
             this.Text = "Form1";
-           // this.Load += new System.EventHandler(this.Form1_Load);
+            this.Load += new System.EventHandler(this.Form1_Load);
+
+            this.Text = "Client";
+
             this.ResumeLayout(false);
             this.PerformLayout();
 
