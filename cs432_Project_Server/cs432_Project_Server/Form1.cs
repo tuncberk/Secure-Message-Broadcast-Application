@@ -27,6 +27,8 @@ namespace cs432_Project_Server
         byte[] byteKey = new byte[16];
         byte[] byteIV = new byte[16];
         Hashtable userInfo = new Hashtable();
+        string usrName;
+        byte[] challenge;
 
         bool terminating = false;
         bool listening = false;
@@ -154,7 +156,7 @@ namespace cs432_Project_Server
 
                     Console.WriteLine(incomingMessage);
                     //incomingMessage = incomingMessage.Substring(0, incomingMessage.IndexOf("\0"));
-                    if(messageCode == "/E")
+                    if (messageCode == "/E")
                     {
                         byte[] decryptedByteArray = decryptWithRSA(incomingMessage, 3072, RSAxmlKey3072);
                         string secretMessage = Encoding.Default.GetString(decryptedByteArray);
@@ -187,60 +189,34 @@ namespace cs432_Project_Server
                     else if (messageCode == "/A")
                     {
                         incomingMessage = incomingMessage.Substring(0, incomingMessage.IndexOf("\0"));
+                        usrName = incomingMessage;
+
+                        challenge = GenerateChallenge();
+
+                        string str = Encoding.Default.GetString(challenge);
+                        str = "/A" + str;
+                        challenge = Encoding.Default.GetBytes(str);
+
+                        s.Send(challenge);
                     }
+                    else if (messageCode == "/H")
+                    {
+                        incomingMessage = incomingMessage.Substring (0, incomingMessage.IndexOf("\0"));
+                        bool isVerified;
+                        string pass = userInfo[usrName].ToString();
+                        byte[] bytePass = Encoding.Default.GetBytes(pass);
+                        string str = Encoding.Default.GetString(challenge);
 
 
-                    byte[] decryptedByteArray = decryptWithRSA(incomingMessage, 3072, RSAxmlKey3072);
-                    string secretMessage = Encoding.Default.GetString(decryptedByteArray);
+                        if (Encoding.Default.GetString(applyHMACwithSHA256(str, bytePass)) == incomingMessage)
+                            isVerified = true;
+                        else isVerified = false;
 
-                    Console.WriteLine("Secret message:" + secretMessage);
-                    string username;
-                    string password;
-                    username = secretMessage.Substring(0, secretMessage.IndexOf("/"));
-                    password = secretMessage.Substring(secretMessage.IndexOf("/") + 1);
-
-                    Console.WriteLine("username: " + username);
-                    Console.WriteLine("password: " + password);
-
-                    bool isUnique = true;
-                    string responseMessage;
-                    byte[] signedRSAmessage;
-                    byte[] challenge;
-                    isUnique =  checkUsernameUnique();
-                    responseMessage = generateResponseMessage(isUnique);
-                    signedRSAmessage = signResponseMessage(responseMessage);
-
-                    //buffer = null;
-                    s.Send(signedRSAmessage);
-                    challenge = GenerateChallenge();
-                    s.Send(challenge);
-                    //sendResponseMessage(signedRSAmessage);
-
-                    //logs.AppendText(incomingMessage + "\n");
-
-
-                    //if (remoteConnected)
-                    //{
-                    //    try
-                    //    {
-                    //        remoteSocket.Send(buffer);
-
-                    //        buffer = new Byte[64];
-                    //        remoteSocket.Receive(buffer);
-
-                    //        s.Send(buffer);
-                    //    }
-                    //    catch
-                    //    {
-                    //        remoteConnected = false;
-                    //        remoteSocket = null;
-                    //        connectButton.Enabled = true;
-                    //    }
-                    //}
-                    //else
-                    //{
-                    //    logs.AppendText("Not connected to remote server");
-                    //}
+                        if (isVerified)
+                        {
+                            logs.AppendText("Login Successful");
+                        }
+                    }
 
                 }
                 catch
@@ -430,6 +406,39 @@ namespace cs432_Project_Server
             }
 
             return bytes;
-        } 
+        }
+        // verifying with RSA
+        static bool verifyWithRSA(string input, int algoLength, string xmlString, byte[] signature)
+        {
+            // convert input string to byte array
+            byte[] byteInput = Encoding.Default.GetBytes(input);
+            // create RSA object from System.Security.Cryptography
+            RSACryptoServiceProvider rsaObject = new RSACryptoServiceProvider(algoLength);
+            // set RSA object with xml string
+            rsaObject.FromXmlString(xmlString);
+            bool result = false;
+
+            try
+            {
+                result = rsaObject.VerifyData(byteInput, "SHA256", signature);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+            }
+
+            return result;
+        }
+        static byte[] applyHMACwithSHA256(string input, byte[] key)
+        {
+            // convert input string to byte array
+            byte[] byteInput = Encoding.Default.GetBytes(input);
+            // create HMAC applier object from System.Security.Cryptography
+            HMACSHA256 hmacSHA256 = new HMACSHA256(key);
+            // get the result of HMAC operation
+            byte[] result = hmacSHA256.ComputeHash(byteInput);
+
+            return result;
+        }
     }
 }

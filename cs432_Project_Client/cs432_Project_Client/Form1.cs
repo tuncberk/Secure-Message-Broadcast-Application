@@ -22,6 +22,7 @@ namespace cs432_Project_Client
         byte[] message;
         byte[] encryptedRSA;
         string messageStr;
+        byte[] halfHash;
 
         bool terminating = false;
         bool connected = false;
@@ -89,7 +90,7 @@ namespace cs432_Project_Client
         private void concatenateHashWithUsername()
         {
             int halfLength = sha256.Length / 2;
-            byte[] halfHash = new byte[halfLength];
+            halfHash = new byte[halfLength];
             Console.WriteLine("sha length: " + sha256.Length);
            
             Array.Copy(sha256, halfLength, halfHash, 0, halfLength);
@@ -127,10 +128,15 @@ namespace cs432_Project_Client
                     }
                     else if(messageCode == "/A")
                     {
+                        //incomingMessage = Encoding.Default.GetString(buffer);
+                        incomingMessage = incomingMessage.Substring(0, incomingMessage.IndexOf("\0"));
+                        byte[] hmac = applyHMACwithSHA256(incomingMessage, halfHash);
 
+                        string str = Encoding.Default.GetString(hmac);
+                        str = "/H" + str;
+                        hmac = Encoding.Default.GetBytes(str);
+                        clientSocket.Send(hmac);
                     }
-                    
-
                 }
                 catch
                 {
@@ -208,6 +214,7 @@ namespace cs432_Project_Client
             return result;
         }
 
+        // HMAC with SHA-256
         static byte[] applyHMACwithSHA256(string input, byte[] key)
         {
             // convert input string to byte array
