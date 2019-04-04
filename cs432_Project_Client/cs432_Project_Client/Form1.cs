@@ -22,7 +22,6 @@ namespace cs432_Project_Client
         byte[] message;
         byte[] encryptedRSA;
         string messageStr;
-        byte[] halfHash;
 
         bool terminating = false;
         bool connected = false;
@@ -47,6 +46,7 @@ namespace cs432_Project_Client
                 {
                     clientSocket.Connect(IP, port);
                     enrollButton.Enabled = true;
+                    loginButton.Enabled = true;
                     connected = true;
                     logs.AppendText("Connected to server\n");
 
@@ -90,7 +90,7 @@ namespace cs432_Project_Client
         private void concatenateHashWithUsername()
         {
             int halfLength = sha256.Length / 2;
-            halfHash = new byte[halfLength];
+            byte[] halfHash = new byte[halfLength];
             Console.WriteLine("sha length: " + sha256.Length);
            
             Array.Copy(sha256, halfLength, halfHash, 0, halfLength);
@@ -130,12 +130,30 @@ namespace cs432_Project_Client
                     {
                         //incomingMessage = Encoding.Default.GetString(buffer);
                         incomingMessage = incomingMessage.Substring(0, incomingMessage.IndexOf("\0\0"));
+                        string password = passwordLogin.Text;
+                        byte[] passwordHash = hashWithSHA256(password);
+                        int halfLength = passwordHash.Length / 2;
+                        byte[] halfHash = new byte[halfLength];
+
+                        Array.Copy(passwordHash, halfLength, halfHash, 0, halfLength);
                         byte[] hmac = applyHMACwithSHA256(incomingMessage, halfHash);
 
                         string str = Encoding.Default.GetString(hmac);
                         str = "/H" + str;
                         hmac = Encoding.Default.GetBytes(str);
                         clientSocket.Send(hmac);
+                    }
+                    else if(messageCode == "/M")
+                    {
+                        byte[] arr = Encoding.Default.GetBytes(incomingMessage);
+                        string msg = "success";
+                        if (verifyWithRSA(msg, 3072, RSAPublicKey3072_verification, arr))
+                        {
+                            logs.AppendText("Login Successfull\n");
+                            loginButton.Enabled = true;
+                        }
+                        else
+                            logs.AppendText("Login Failed\n");
                     }
                 }
                 catch

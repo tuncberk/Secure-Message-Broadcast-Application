@@ -202,23 +202,31 @@ namespace cs432_Project_Server
                     else if (messageCode == "/H")
                     {
                         incomingMessage = incomingMessage.Substring(0, incomingMessage.IndexOf("\0"));
-                        bool isVerified;
+                       
                         string pass = userInfo[usrName].ToString();
                         byte[] bytePass = Encoding.Default.GetBytes(pass);
                         string str = Encoding.Default.GetString(challenge);
 
                         byte[] hmac = applyHMACwithSHA256(str, bytePass);
                         string hmacStr = Encoding.Default.GetString(hmac);
-                        
 
+                        string msg;
                         if (hmacStr == incomingMessage)
-                            isVerified = true;
-                        else isVerified = false;
-
-                        if (isVerified)
-                        {
-                            logs.AppendText("Login Successful");
+                        { 
+                            msg = "success";
                         }
+                        else
+                        {
+                            msg = "error";
+                        }
+                        byte[] signedMsg = signResponseMessage(msg);
+                        signedMsg = addCodeToMessage(signedMsg, "/M");
+
+                        s.Send(signedMsg);
+                        //if (isVerified)
+                        //{
+                        //    logs.AppendText("Login Successful");
+                        //}
                     }
 
                 }
@@ -234,6 +242,13 @@ namespace cs432_Project_Server
                     connected = false;
                 }
             }
+        }
+
+        private byte[] addCodeToMessage(byte[] arr, string s)
+        {
+            string str = Encoding.Default.GetString(arr);
+            str = s + str;
+            return Encoding.Default.GetBytes(str);
         }
 
         private void sendResponseMessage(byte[] message)
