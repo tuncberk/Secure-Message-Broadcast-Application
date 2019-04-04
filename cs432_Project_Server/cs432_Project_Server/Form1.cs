@@ -175,6 +175,9 @@ namespace cs432_Project_Server
                         responseMessage = generateResponseMessage(isUnique);
                         signedRSAmessage = signResponseMessage(responseMessage);
 
+                        string str = Encoding.Default.GetString(signedRSAmessage);
+                        str = "/E" + str;
+                        signedRSAmessage = Encoding.Default.GetBytes(str);
                         //buffer = null;
                         s.Send(signedRSAmessage);
                         //sendResponseMessage(signedRSAmessage);

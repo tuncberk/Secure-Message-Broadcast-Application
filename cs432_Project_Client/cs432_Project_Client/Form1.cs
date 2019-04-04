@@ -105,17 +105,31 @@ namespace cs432_Project_Client
             {
                 try
                 {
-                    Byte[] buffer = new Byte[384];
+                    Byte[] buffer = new Byte[386];
                     clientSocket.Receive(buffer);
-                    
-                    string msg = "success";
-                    if (verifyWithRSA(msg, 3072, RSAPublicKey3072_verification, buffer))
+
+                    string incomingMessage = Encoding.Default.GetString(buffer);
+                    //string incomingMessage = Convert.ToBase64String(buffer);
+                    string messageCode = incomingMessage.Substring(0, 2);
+                    incomingMessage = incomingMessage.Substring(2);
+
+                    if(messageCode == "/E")
                     {
-                        logs.AppendText("Enrollment Successfull\n");
-                        loginButton.Enabled = true;
+                        byte[] arr = Encoding.Default.GetBytes(incomingMessage);
+                        string msg = "success";
+                        if (verifyWithRSA(msg, 3072, RSAPublicKey3072_verification, arr))
+                        {
+                            logs.AppendText("Enrollment Successfull\n");
+                            loginButton.Enabled = true;
+                        }
+                        else
+                            logs.AppendText("Enrollment Failed\n");
                     }
-                    else
-                        logs.AppendText("Enrollment Failed\n");
+                    else if(messageCode == "/A")
+                    {
+
+                    }
+                    
 
                 }
                 catch
