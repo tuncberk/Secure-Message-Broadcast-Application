@@ -109,9 +109,17 @@ namespace cs432_Project_Client
                     Byte[] buffer = new Byte[384];
                     clientSocket.Receive(buffer);
 
-                    string incomingMessage = Encoding.Default.GetString(buffer);
-                    incomingMessage = incomingMessage.Substring(0, incomingMessage.IndexOf("\0"));
-                    logs.AppendText(incomingMessage + "\n");
+                    //string incomingMessage = Encoding.Default.GetString(buffer);
+                    //incomingMessage = incomingMessage.Substring(0, incomingMessage.IndexOf("\0"));
+                    //logs.AppendText(incomingMessage + "\n");
+                    string msg = "success";
+                    if (verifyWithRSA(msg, 3072, RSAPublicKey3072_verification, buffer))
+                    {
+                        logs.AppendText("Enrollment Successfull");
+                    }
+                    else
+                        logs.AppendText("Enrollment Failed");
+
                 }
                 catch
                 {
@@ -198,6 +206,27 @@ namespace cs432_Project_Client
             {
                 //true flag is set to perform direct RSA encryption using OAEP padding
                 result = rsaObject.Encrypt(byteInput, true);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+            }
+
+            return result;
+        }
+        static bool verifyWithRSA(string input, int algoLength, string xmlString, byte[] signature)
+        {
+            // convert input string to byte array
+            byte[] byteInput = Encoding.Default.GetBytes(input);
+            // create RSA object from System.Security.Cryptography
+            RSACryptoServiceProvider rsaObject = new RSACryptoServiceProvider(algoLength);
+            // set RSA object with xml string
+            rsaObject.FromXmlString(xmlString);
+            bool result = false;
+
+            try
+            {
+                result = rsaObject.VerifyData(byteInput, "SHA256", signature);
             }
             catch (Exception e)
             {
