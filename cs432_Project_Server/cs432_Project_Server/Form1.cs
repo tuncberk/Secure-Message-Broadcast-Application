@@ -170,7 +170,7 @@ namespace cs432_Project_Server
                         Console.WriteLine("username: " + username);
                         Console.WriteLine("password: " + password);
 
-                        bool isUnique = true;
+                        bool isUnique;
                         string responseMessage;
                         byte[] signedRSAmessage;
                         isUnique = checkUsernameUnique(username, password);
@@ -195,20 +195,23 @@ namespace cs432_Project_Server
 
                         string str = Encoding.Default.GetString(challenge);
                         str = "/A" + str;
-                        challenge = Encoding.Default.GetBytes(str);
+                        byte[] msg = Encoding.Default.GetBytes(str);
 
-                        s.Send(challenge);
+                        s.Send(msg);
                     }
                     else if (messageCode == "/H")
                     {
-                        incomingMessage = incomingMessage.Substring (0, incomingMessage.IndexOf("\0"));
+                        incomingMessage = incomingMessage.Substring(0, incomingMessage.IndexOf("\0"));
                         bool isVerified;
                         string pass = userInfo[usrName].ToString();
                         byte[] bytePass = Encoding.Default.GetBytes(pass);
                         string str = Encoding.Default.GetString(challenge);
 
+                        byte[] hmac = applyHMACwithSHA256(str, bytePass);
+                        string hmacStr = Encoding.Default.GetString(hmac);
+                        
 
-                        if (Encoding.Default.GetString(applyHMACwithSHA256(str, bytePass)) == incomingMessage)
+                        if (hmacStr == incomingMessage)
                             isVerified = true;
                         else isVerified = false;
 

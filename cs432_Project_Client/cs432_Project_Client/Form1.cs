@@ -95,7 +95,7 @@ namespace cs432_Project_Client
            
             Array.Copy(sha256, halfLength, halfHash, 0, halfLength);
          
-            messageStr = username.Text + "/" + generateHexStringFromByteArray(halfHash);
+            messageStr = username.Text + "/" + Encoding.Default.GetString(halfHash);
 
             Console.WriteLine("messagestr: " + messageStr);
         }
@@ -129,7 +129,7 @@ namespace cs432_Project_Client
                     else if(messageCode == "/A")
                     {
                         //incomingMessage = Encoding.Default.GetString(buffer);
-                        incomingMessage = incomingMessage.Substring(0, incomingMessage.IndexOf("\0"));
+                        incomingMessage = incomingMessage.Substring(0, incomingMessage.IndexOf("\0\0"));
                         byte[] hmac = applyHMACwithSHA256(incomingMessage, halfHash);
 
                         string str = Encoding.Default.GetString(hmac);
