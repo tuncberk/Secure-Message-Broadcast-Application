@@ -12,6 +12,7 @@ using System.Net.Sockets;
 using System.Threading;
 using System.Security.Cryptography;
 using System.Diagnostics;
+using System.Collections;
 
 namespace cs432_Project_Server
 {
@@ -23,6 +24,7 @@ namespace cs432_Project_Server
         byte[] sha256;
         byte[] byteKey = new byte[16];
         byte[] byteIV = new byte[16];
+        Hashtable userInfo = new Hashtable();
 
         bool terminating = false;
         bool listening = false;
@@ -162,7 +164,7 @@ namespace cs432_Project_Server
                     bool isUnique = true;
                     string responseMessage;
                     byte[] signedRSAmessage;
-                    isUnique =  checkUsernameUnique();
+                    isUnique =  checkUsernameUnique(username, password);
                     responseMessage = generateResponseMessage(isUnique);
                     signedRSAmessage = signResponseMessage(responseMessage);
 
@@ -234,9 +236,14 @@ namespace cs432_Project_Server
             return message;
         }
 
-        private bool checkUsernameUnique()
+        private bool checkUsernameUnique(string username, string password)
         {
-            return true;
+            if (!userInfo.Contains(username))
+            {
+                userInfo.Add(username, password);
+                return true;
+            }
+            return false;
         }
 
         private string readRSAKeyPairs()
