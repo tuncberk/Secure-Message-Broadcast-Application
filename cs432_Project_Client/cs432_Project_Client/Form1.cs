@@ -47,6 +47,7 @@ namespace cs432_Project_Client
                     clientSocket.Connect(IP, port);
                     enrollButton.Enabled = true;
                     loginButton.Enabled = true;
+                    connectButton.Enabled = false;
                     connected = true;
                     logs.AppendText("Connected to server\n");
 
@@ -66,20 +67,36 @@ namespace cs432_Project_Client
         }
         private void enrollButton_Click(object sender, EventArgs e)
         {
-            string pass = password.Text;
-            sha256 = hashWithSHA256(pass);
-            concatenateHashWithUsername();
-            encryptMessage();
-            sendEncryptedMessage();
+            if (username.Text != "" && password.Text != "")
+            {
+                string pass = password.Text;
+                sha256 = hashWithSHA256(pass);
+                concatenateHashWithUsername();
+                encryptMessage();
+                sendEncryptedMessage();
+            }
+            else
+            {
+                logs.AppendText("Enter valid username/password\n");
+
+            }
         }
 
         private void encryptMessage()
         {
-            //messageStr = generateHexStringFromByteArray(message);
-            encryptedRSA = encryptWithRSA(messageStr, 3072, RSAPublicKey3072_encryption);
-            Console.WriteLine("RSA 3072 Encryption:");
-            Console.WriteLine(generateHexStringFromByteArray(encryptedRSA));
-            Console.WriteLine(encryptedRSA.Length);
+            try
+            {
+                //messageStr = generateHexStringFromByteArray(message);
+                encryptedRSA = encryptWithRSA(messageStr, 3072, RSAPublicKey3072_encryption);
+                Console.WriteLine("RSA 3072 Encryption:");
+                Console.WriteLine(generateHexStringFromByteArray(encryptedRSA));
+                Console.WriteLine(encryptedRSA.Length);
+            }
+            catch
+            {
+                logs.AppendText("Encryption Failed\n");
+            }
+
 
         }
         public static string generateHexStringFromByteArray(byte[] input)
@@ -92,9 +109,9 @@ namespace cs432_Project_Client
             int halfLength = sha256.Length / 2;
             byte[] halfHash = new byte[halfLength];
             Console.WriteLine("sha length: " + sha256.Length);
-           
+
             Array.Copy(sha256, halfLength, halfHash, 0, halfLength);
-         
+
             messageStr = username.Text + "/" + Encoding.Default.GetString(halfHash);
 
             Console.WriteLine("messagestr: " + messageStr);
@@ -114,7 +131,7 @@ namespace cs432_Project_Client
                     string messageCode = incomingMessage.Substring(0, 2);
                     incomingMessage = incomingMessage.Substring(2);
 
-                    if(messageCode == "/E")
+                    if (messageCode == "/E")
                     {
                         byte[] arr = Encoding.Default.GetBytes(incomingMessage);
                         string msg = "success";
@@ -126,34 +143,48 @@ namespace cs432_Project_Client
                         else
                             logs.AppendText("Enrollment Failed\n");
                     }
-                    else if(messageCode == "/A")
+                    else if (messageCode == "/A")
                     {
-                        //incomingMessage = Encoding.Default.GetString(buffer);
-                        incomingMessage = incomingMessage.Substring(0, incomingMessage.IndexOf("\0\0"));
-                        string password = passwordLogin.Text;
-                        byte[] passwordHash = hashWithSHA256(password);
-                        int halfLength = passwordHash.Length / 2;
-                        byte[] halfHash = new byte[halfLength];
-
-                        Array.Copy(passwordHash, halfLength, halfHash, 0, halfLength);
-                        byte[] hmac = applyHMACwithSHA256(incomingMessage, halfHash);
-
-                        string str = Encoding.Default.GetString(hmac);
-                        str = "/H" + str;
-                        hmac = Encoding.Default.GetBytes(str);
-                        clientSocket.Send(hmac);
-                    }
-                    else if(messageCode == "/M")
-                    {
-                        byte[] arr = Encoding.Default.GetBytes(incomingMessage);
-                        string msg = "success";
-                        if (verifyWithRSA(msg, 3072, RSAPublicKey3072_verification, arr))
+                        try
                         {
-                            logs.AppendText("Login Successfull\n");
-                            loginButton.Enabled = true;
+                            //incomingMessage = Encoding.Default.GetString(buffer);
+                            incomingMessage = incomingMessage.Substring(0, incomingMessage.IndexOf("\0\0"));
+                            string password = passwordLogin.Text;
+                            byte[] passwordHash = hashWithSHA256(password);
+                            int halfLength = passwordHash.Length / 2;
+                            byte[] halfHash = new byte[halfLength];
+
+                            Array.Copy(passwordHash, halfLength, halfHash, 0, halfLength);
+                            byte[] hmac = applyHMACwithSHA256(incomingMessage, halfHash);
+
+                            string str = Encoding.Default.GetString(hmac);
+                            str = "/H" + str;
+                            hmac = Encoding.Default.GetBytes(str);
+                            clientSocket.Send(hmac);
                         }
-                        else
-                            logs.AppendText("Login Failed\n");
+                        catch
+                        {
+                            logs.AppendText("HMAC Failed\n");
+                        }
+                    }
+                    else if (messageCode == "/M")
+                    {
+                        try
+                        {
+                            byte[] arr = Encoding.Default.GetBytes(incomingMessage);
+                            string msg = "success";
+                            if (verifyWithRSA(msg, 3072, RSAPublicKey3072_verification, arr))
+                            {
+                                logs.AppendText("Login Successfull\n");
+                                loginButton.Enabled = true;
+                            }
+                            else
+                                logs.AppendText("Login Failed\n");
+                        }
+                        catch
+                        {
+                            logs.AppendText("Verification Failed\n");
+                        }
                     }
                 }
                 catch
@@ -161,6 +192,7 @@ namespace cs432_Project_Client
                     if (!terminating)
                     {
                         logs.AppendText("The server has disconnected\n");
+                        connectButton.Enabled = true;
                     }
 
                     clientSocket.Close();
@@ -177,19 +209,6 @@ namespace cs432_Project_Client
 
         private void loginButton_Click(object sender, EventArgs e)
         {
-            //String message = messageText.Text;
-
-            //String username = usernameLogin.Text;
-            //String password = passwordLogin.Text;
-
-            //if (message != "" && message.Length < 63)
-            //{
-            //    Byte[] buffer = new Byte[64];
-            //    buffer = Encoding.Default.GetBytes(message);
-            //    clientSocket.Send(buffer);
-            //}
-
-
             string username = usernameLogin.Text;
             string password = passwordLogin.Text;
 
@@ -200,7 +219,10 @@ namespace cs432_Project_Client
                 buffer = Encoding.Default.GetBytes(msg);
                 clientSocket.Send(buffer);
             }
-
+            else
+            {
+                logs.AppendText("Enter Valid Username/Password\n");
+            }
         }
         private string readRSAPublicKey_encryption()
         {
@@ -303,6 +325,6 @@ namespace cs432_Project_Client
             return result;
         }
 
-     
+
     }
 }
