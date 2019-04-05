@@ -159,13 +159,10 @@ namespace cs432_Project_Server
                             signedRSAmessage = Encoding.Default.GetBytes(str);
                             //buffer = null;
                             s.Send(signedRSAmessage);
-                            //sendResponseMessage(signedRSAmessage);
-
-                            logs.AppendText("A Client Enrolled");
                         }
                         catch
                         {
-                            logs.AppendText("Decryption Failed.");
+                            logs.AppendText("Decryption failed.\n");
                         }
                     }
                     else if (messageCode == "/A")
@@ -183,7 +180,11 @@ namespace cs432_Project_Server
                     }
                     else if (messageCode == "/H")
                     {
-                        incomingMessage = incomingMessage.Substring(0, incomingMessage.IndexOf("\0"));
+                        try
+                        {
+                            incomingMessage = incomingMessage.Substring(0, incomingMessage.IndexOf("\0"));
+                        }
+                        catch{}
                        
                         string pass = userInfo[usrName].ToString();
                         byte[] bytePass = Encoding.Default.GetBytes(pass);
@@ -210,7 +211,10 @@ namespace cs432_Project_Server
                         }
                         catch
                         {
-                            logs.AppendText("HMAC Failed");
+                            logs.AppendText("HMAC failed\n");
+                            s.Close();
+                            socketList.Remove(s);
+                            connected = false;
                         }   
                     }
                 }
@@ -251,7 +255,7 @@ namespace cs432_Project_Server
             }
             catch
             {
-                logs.AppendText("Signing Failed");
+                logs.AppendText("Signing failed\n");
                 return signedRSA = null;
             }
             
@@ -274,38 +278,74 @@ namespace cs432_Project_Server
             if (!userInfo.Contains(username))
             {
                 userInfo.Add(username, password);
+                logs.AppendText("A client is enrolled: " + username + "\n");
                 return true;
             }
+            logs.AppendText("A client enrollment failed: " + username + "\n");
             return false;
         }
 
         private string readRSAKeyPairs()
         {
-            String encryptedString;
+            string encryptedString;
             string RSAKeyPairs;
             using (System.IO.StreamReader fileReader = new System.IO.StreamReader("../encrypted_server_enc_dec_pub_prv.txt"))
             {
-                encryptedString = Encoding.Default.GetString(hexStringToByteArray(fileReader.ReadLine()));
-                byte[] decryptedAES128 = decryptWithAES128(encryptedString, byteKey, byteIV);
-                RSAKeyPairs = Encoding.Default.GetString(decryptedAES128);
-                Console.WriteLine("AES128 Decryption Encr/Decr:");
-                Console.WriteLine(RSAKeyPairs);
+                try
+                {
+                    encryptedString = Encoding.Default.GetString(hexStringToByteArray(fileReader.ReadLine()));
+                    try
+                    {
+                        byte[] decryptedAES128 = decryptWithAES128(encryptedString, byteKey, byteIV);
+                        RSAKeyPairs = Encoding.Default.GetString(decryptedAES128);
+                        Console.WriteLine("AES128 Decryption Encr/Decr:");
+                        Console.WriteLine(RSAKeyPairs);
+                        return RSAKeyPairs;
+                    }
+                    catch
+                    {
+                        logs.AppendText("AES128 Decryption is not successful");
+                        RSAKeyPairs = null;
+                    }
+                }
+                catch
+                {
+                    logs.AppendText("Could not read key file");
+                    RSAKeyPairs = null;
+                }
+                return RSAKeyPairs;
             }
-            return RSAKeyPairs;
         }
         private string readRSASignVerify()
         {
-            String encryptedString;
+            string encryptedString;
             string RSAKeyPairs;
             using (System.IO.StreamReader fileReader = new System.IO.StreamReader("../encrypted_server_signing_verification_pub_prv.txt"))
             {
-                encryptedString = Encoding.Default.GetString(hexStringToByteArray(fileReader.ReadLine()));
-                byte[] decryptedAES128 = decryptWithAES128(encryptedString, byteKey, byteIV);
-                RSAKeyPairs = Encoding.Default.GetString(decryptedAES128);
-                Console.WriteLine("AES128 Decryption Sign/Verify:");
-                Console.WriteLine(RSAKeyPairs);
+                try
+                {
+                    encryptedString = Encoding.Default.GetString(hexStringToByteArray(fileReader.ReadLine()));
+                    try
+                    {
+                        byte[] decryptedAES128 = decryptWithAES128(encryptedString, byteKey, byteIV);
+                        RSAKeyPairs = Encoding.Default.GetString(decryptedAES128);
+                        Console.WriteLine("AES128 Decryption Encr/Decr:");
+                        Console.WriteLine(RSAKeyPairs);
+                        return RSAKeyPairs;
+                    }
+                    catch
+                    {
+                        logs.AppendText("AES128 Decryption is not successful");
+                        RSAKeyPairs = null;
+                    }
+                }
+                catch
+                {
+                    logs.AppendText("Could not read key file");
+                    RSAKeyPairs = null;
+                }
+                return RSAKeyPairs;
             }
-            return RSAKeyPairs;
         }
         public static string generateHexStringFromByteArray(byte[] input)
         {

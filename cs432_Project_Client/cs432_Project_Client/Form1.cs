@@ -193,6 +193,8 @@ namespace cs432_Project_Client
                     {
                         logs.AppendText("The server has disconnected\n");
                         connectButton.Enabled = true;
+                        enrollButton.Enabled = false;
+                        loginButton.Enabled = false;
                     }
 
                     clientSocket.Close();
