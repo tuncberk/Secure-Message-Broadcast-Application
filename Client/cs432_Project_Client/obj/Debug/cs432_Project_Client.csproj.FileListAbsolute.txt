@@ -25,3 +25,6 @@ C:\Users\ASUS\Documents\GitHub\Secure-Message-Broadcast-Application\cs432_Projec
 C:\Users\ASUS\Documents\GitHub\Secure-Message-Broadcast-Application\cs432_Project_Client\cs432_Project_Client\obj\Debug\cs432_Project_Client.csproj.CoreCompileInputs.cache
 C:\Users\ASUS\Documents\GitHub\Secure-Message-Broadcast-Application\cs432_Project_Client\cs432_Project_Client\obj\Debug\cs432_Project_Client.exe
 C:\Users\ASUS\Documents\GitHub\Secure-Message-Broadcast-Application\cs432_Project_Client\cs432_Project_Client\obj\Debug\cs432_Project_Client.pdb
+C:\Users\Berk\Documents\Visual Studio 2015\Projects\cs432_Project\Client\cs432_Project_Client\bin\Debug\cs432_Project_Client.exe.config
+C:\Users\Berk\Documents\Visual Studio 2015\Projects\cs432_Project\Client\cs432_Project_Client\obj\Debug\cs432_Project_Client.exe
+C:\Users\Berk\Documents\Visual Studio 2015\Projects\cs432_Project\Client\cs432_Project_Client\obj\Debug\cs432_Project_Client.pdb

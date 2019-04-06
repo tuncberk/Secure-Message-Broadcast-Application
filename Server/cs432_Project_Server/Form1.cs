@@ -22,7 +22,7 @@ namespace cs432_Project_Server
       
         string RSAxmlKey3072;
         string RSASignVerifyKey;
-        string password = "Bohemian";
+        string password;
         byte[] sha256;
         byte[] byteKey = new byte[16];
         byte[] byteIV = new byte[16];
@@ -43,10 +43,7 @@ namespace cs432_Project_Server
             Control.CheckForIllegalCrossThreadCalls = false;
             this.FormClosing += new FormClosingEventHandler(Form1_FormClosing);
             InitializeComponent();
-            sha256 = hashWithSHA256(password);
-            getKeyAndIV();
-            RSAxmlKey3072 = readRSAKeyPairs();
-            RSASignVerifyKey = readRSASignVerify();
+            
         }
 
         private void getKeyAndIV()
@@ -304,7 +301,7 @@ namespace cs432_Project_Server
                     }
                     catch
                     {
-                        logs.AppendText("AES128 Decryption is not successful");
+                        logs.AppendText("AES128 Decryption for enc/dec is not successful\n");
                         RSAKeyPairs = null;
                     }
                 }
@@ -331,11 +328,16 @@ namespace cs432_Project_Server
                         RSAKeyPairs = Encoding.Default.GetString(decryptedAES128);
                         Console.WriteLine("AES128 Decryption Encr/Decr:");
                         Console.WriteLine(RSAKeyPairs);
+                        
+                        listenButton.Enabled = true;
+                        logs.AppendText("Decryption of key pairs is successful\n");
+                        button1.Enabled = false;
+
                         return RSAKeyPairs;
                     }
                     catch
                     {
-                        logs.AppendText("AES128 Decryption is not successful");
+                        logs.AppendText("AES128 Decryption for sign/verify is not successful\n");
                         RSAKeyPairs = null;
                     }
                 }
@@ -492,6 +494,15 @@ namespace cs432_Project_Server
         }
         private void connectButton_Click(object sender, EventArgs e)
         {
+        }
+
+        private void button1_Click_1(object sender, EventArgs e)
+        {
+            password = passwordBox.Text;
+            sha256 = hashWithSHA256(password);
+            getKeyAndIV();
+            RSAxmlKey3072 = readRSAKeyPairs();
+            RSASignVerifyKey = readRSASignVerify();
         }
     }
 }
