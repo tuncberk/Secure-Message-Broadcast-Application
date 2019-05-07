@@ -19,7 +19,7 @@ namespace cs432_Project_Server
 {
     public partial class Form1 : Form
     {
-      
+
         string RSAxmlKey3072;
         string RSASignVerifyKey;
         string password;
@@ -34,7 +34,7 @@ namespace cs432_Project_Server
         bool listening = false;
         //bool remoteConnected = false;
 
-        
+
         Socket serverSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
         //Socket remoteSocket;
         List<Socket> socketList = new List<Socket>();
@@ -43,7 +43,7 @@ namespace cs432_Project_Server
             Control.CheckForIllegalCrossThreadCalls = false;
             this.FormClosing += new FormClosingEventHandler(Form1_FormClosing);
             InitializeComponent();
-            
+
         }
 
         private void getKeyAndIV()
@@ -181,8 +181,8 @@ namespace cs432_Project_Server
                         {
                             incomingMessage = incomingMessage.Substring(0, incomingMessage.IndexOf("\0"));
                         }
-                        catch{}
-                       
+                        catch { }
+
                         string pass = userInfo[usrName].ToString();
                         byte[] bytePass = Encoding.Default.GetBytes(pass);
                         string str = Encoding.Default.GetString(challenge);
@@ -212,8 +212,25 @@ namespace cs432_Project_Server
                             s.Close();
                             socketList.Remove(s);
                             connected = false;
-                        }   
+                        }
                     }
+                    //else if (messageCode == "/C")
+                    //{
+                    //    incomingMessage = incomingMessage.Substring(0, incomingMessage.IndexOf("\0"));
+
+                    //    string oldPass = incomingMessage.Substring(0, incomingMessage.IndexOf("///"));
+                    //    string newPass = incomingMessage.Substring(incomingMessage.IndexOf("///") + 1);
+                        
+
+
+                    //    challenge = GenerateChallenge();
+
+                    //    string str = Encoding.Default.GetString(challenge);
+                    //    str = "/A" + str;
+                    //    byte[] msg = Encoding.Default.GetBytes(str);
+
+                    //    s.Send(msg);
+                    //}
                 }
                 catch
                 {
@@ -255,7 +272,7 @@ namespace cs432_Project_Server
                 logs.AppendText("Signing failed\n");
                 return signedRSA = null;
             }
-            
+
         }
 
         private string generateResponseMessage(bool isUnique)
@@ -281,7 +298,38 @@ namespace cs432_Project_Server
             logs.AppendText("A client enrollment failed: " + username + "\n");
             return false;
         }
+        private void writeRSAKeyPairs()
+        {
+            try
+            {
+                byte[] encryptedString = encryptWithAES128(RSAxmlKey3072, byteKey, byteIV);
+                string keysHexStr = generateHexStringFromByteArray(encryptedString);
+                System.IO.File.WriteAllText("../encrypted_server_enc_dec_pub_prv.txt", keysHexStr);
 
+                logs.AppendText("enc/dec keys encryption successfull.\n");
+            }
+            catch
+            {
+                logs.AppendText("Keys encryption failed.\n");
+            }
+            
+        }
+        private void writeRSASignVerify()
+        {
+            try
+            {
+                byte[] encryptedString = encryptWithAES128(RSASignVerifyKey, byteKey, byteIV);
+                string keysHexStr = generateHexStringFromByteArray(encryptedString);
+                System.IO.File.WriteAllText("../encrypted_server_signing_verification_pub_prv.txt", keysHexStr);
+
+                logs.AppendText("sign/veryfy keys encryption successfull.\n");
+            }
+            catch 
+            {
+                logs.AppendText("Keys encryption failed.\n");
+            }
+            
+        }
         private string readRSAKeyPairs()
         {
             string encryptedString;
@@ -307,7 +355,7 @@ namespace cs432_Project_Server
                 }
                 catch
                 {
-                    logs.AppendText("Could not read key file");
+                    logs.AppendText("Could not read key file.\n");
                     RSAKeyPairs = null;
                 }
                 return RSAKeyPairs;
@@ -328,7 +376,7 @@ namespace cs432_Project_Server
                         RSAKeyPairs = Encoding.Default.GetString(decryptedAES128);
                         Console.WriteLine("AES128 Decryption Encr/Decr:");
                         Console.WriteLine(RSAKeyPairs);
-                        
+
                         listenButton.Enabled = true;
                         logs.AppendText("Decryption of key pairs is successful\n");
                         button1.Enabled = false;
@@ -343,7 +391,7 @@ namespace cs432_Project_Server
                 }
                 catch
                 {
-                    logs.AppendText("Could not read key file");
+                    logs.AppendText("Could not read key file.\n");
                     RSAKeyPairs = null;
                 }
                 return RSAKeyPairs;
@@ -492,6 +540,40 @@ namespace cs432_Project_Server
 
             return result;
         }
+        static byte[] encryptWithAES128(string input, byte[] key, byte[] IV)
+        {
+            // convert input string to byte array
+            byte[] byteInput = Encoding.Default.GetBytes(input);
+
+            // create AES object from System.Security.Cryptography
+            RijndaelManaged aesObject = new RijndaelManaged();
+            // since we want to use AES-128
+            aesObject.KeySize = 128;
+            // block size of AES is 128 bits
+            aesObject.BlockSize = 128;
+            // mode -> CipherMode.*
+            aesObject.Mode = CipherMode.CFB;
+            // feedback size should be equal to block size
+            aesObject.FeedbackSize = 128;
+            // set the key
+            aesObject.Key = key;
+            // set the IV
+            aesObject.IV = IV;
+            // create an encryptor with the settings provided
+            ICryptoTransform encryptor = aesObject.CreateEncryptor();
+            byte[] result = null;
+
+            try
+            {
+                result = encryptor.TransformFinalBlock(byteInput, 0, byteInput.Length);
+            }
+            catch (Exception e) // if encryption fails
+            {
+                Console.WriteLine(e.Message); // display the cause
+            }
+
+            return result;
+        }
         private void connectButton_Click(object sender, EventArgs e)
         {
         }
@@ -499,10 +581,45 @@ namespace cs432_Project_Server
         private void button1_Click_1(object sender, EventArgs e)
         {
             password = passwordBox.Text;
-            sha256 = hashWithSHA256(password);
+            decryptKeys(password);
+        }
+        private void decryptKeys(string pass)
+        {
+            sha256 = hashWithSHA256(pass);
             getKeyAndIV();
             RSAxmlKey3072 = readRSAKeyPairs();
             RSASignVerifyKey = readRSASignVerify();
+        }
+        private void encryptKeys(string pass)
+        {
+            sha256 = hashWithSHA256(pass);
+            getKeyAndIV();
+            writeRSAKeyPairs();
+            writeRSASignVerify();
+        }
+
+        private void changePassButton_Click(object sender, EventArgs e)
+        {
+            string oldPassword = oldPass.Text;
+            string newPassword = newPass.Text;
+
+            if (newPassword != "" || oldPassword != "")
+            {
+                try
+                {
+                    decryptKeys(oldPassword);
+                    encryptKeys(newPassword);
+                    //logs.AppendText("Password change successfull.");
+                }
+                catch
+                {
+                    logs.AppendText("Password change failed.\n");
+                }
+            }
+            else
+            {
+                logs.AppendText("Please enter valid passwords.\n");
+            }
         }
     }
 }
