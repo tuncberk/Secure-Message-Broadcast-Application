@@ -29,6 +29,8 @@ namespace cs432_Project_Server
         Hashtable userInfo = new Hashtable();
         string usrName;
         byte[] challenge;
+        string userPasswordHash;
+
 
         bool terminating = false;
         bool listening = false;
@@ -140,7 +142,7 @@ namespace cs432_Project_Server
                             string password;
                             username = secretMessage.Substring(0, secretMessage.IndexOf("/"));
                             password = secretMessage.Substring(secretMessage.IndexOf("/") + 1);
-
+                            userPasswordHash = password;
                             Console.WriteLine("username: " + username);
                             Console.WriteLine("password: " + password);
 
@@ -195,11 +197,25 @@ namespace cs432_Project_Server
                             string msg;
                             if (hmacStr == incomingMessage)
                             {
-                                msg = "success";
+                                // msg = "success";
+                                msg = "OK";
+                                byte[] hash = Encoding.Default.GetBytes(userPasswordHash);
+                                byte[] sessionKeyEnc = generateSessionKey();
+                                byte[] sessionKeyAuth = generateSessionKey();
+
+                                string sessionKey1 = Encoding.Default.GetString(sessionKeyEnc);
+                                byte[] encryptedSessionKeyEnc = encryptWithAES128(sessionKey1, hash, challenge);
+
+                                string sessionKey2 = Encoding.Default.GetString(sessionKeyAuth);
+                                byte[] encryptedSessionKeyAuth = encryptWithAES128(sessionKey2, hash, challenge);
+
+                                msg = msg + "/" + Encoding.Default.GetString(encryptedSessionKeyEnc) + '/' + Encoding.Default.GetString(encryptedSessionKeyAuth);
+
                             }
                             else
                             {
-                                msg = "error";
+                                //msg = "error";
+                                msg = "NOT OK";
                             }
                             byte[] signedMsg = signResponseMessage(msg);
                             signedMsg = addCodeToMessage(signedMsg, "/M");
@@ -506,6 +522,20 @@ namespace cs432_Project_Server
             }
 
             return bytes;
+        }
+        static byte[] generateSessionKey()
+        {
+            //AesCryptoServiceProvider myAes = new AesCryptoServiceProvider();
+            // myAes.GenerateKey();
+            // return myAes.Key;
+            byte[] bytes = new byte[128];
+            using (var rng = new RNGCryptoServiceProvider())
+            {
+                rng.GetBytes(bytes);
+            }
+
+            return bytes;
+
         }
         // verifying with RSA
         static bool verifyWithRSA(string input, int algoLength, string xmlString, byte[] signature)

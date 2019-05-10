@@ -177,6 +177,9 @@ namespace cs432_Project_Client
                             {
                                 logs.AppendText("Login Successfull\n");
                                 loginButton.Enabled = true;
+                                incomingMessage = incomingMessage.Substring(2);
+                                string sessionKey1 = incomingMessage.Substring(0, incomingMessage.IndexOf("/"));
+                                string encryptedsessionKeyAuth = incomingMessage.Substring(incomingMessage.IndexOf("/"));
                             }
                             else
                                 logs.AppendText("Login Failed\n");
