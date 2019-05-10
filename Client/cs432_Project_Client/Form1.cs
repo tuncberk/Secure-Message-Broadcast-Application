@@ -337,17 +337,7 @@ namespace cs432_Project_Client
 
         private void changePassButton_Click(object sender, EventArgs e)
         {
-            if(newPass.Text != "" && oldPass.Text != "")
-            {
-                string message;
-                message = "/C" + oldPass.Text + "///" + newPass.Text;
-                byte[] buffer = Encoding.Default.GetBytes(message);
-                clientSocket.Send(buffer);
-            }
-            else
-            {
-                logs.AppendText("Please enter valid passwords.");
-            }
+       
 
         }
     }
