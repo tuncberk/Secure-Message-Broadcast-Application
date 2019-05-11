@@ -19,10 +19,15 @@ namespace cs432_Project_Client
         string RSAPublicKey3072_encryption;
         string RSAPublicKey3072_verification;
         byte[] sha256;
-        byte[] message;
+        //byte[] message;
         byte[] encryptedRSA;
+        byte[] halfHash;
+        byte[] sessionKeyEnc;
+        byte[] sessionKeyAuth;
         string messageStr;
+        string userName;
 
+        string challenge;
         bool terminating = false;
         bool connected = false;
         Socket clientSocket;
@@ -31,6 +36,8 @@ namespace cs432_Project_Client
             Control.CheckForIllegalCrossThreadCalls = false;
             this.FormClosing += new FormClosingEventHandler(Form1_FormClosing);
             InitializeComponent();
+            ipAdress.Text = "localhost";
+            portNum.Text = "123";
             RSAPublicKey3072_encryption = readRSAPublicKey_encryption();
             RSAPublicKey3072_verification = readRSAPublicKey_verification();
 
@@ -107,7 +114,7 @@ namespace cs432_Project_Client
         private void concatenateHashWithUsername()
         {
             int halfLength = sha256.Length / 2;
-            byte[] halfHash = new byte[halfLength];
+            halfHash = new byte[halfLength];
             Console.WriteLine("sha length: " + sha256.Length);
 
             Array.Copy(sha256, halfLength, halfHash, 0, halfLength);
@@ -149,6 +156,7 @@ namespace cs432_Project_Client
                         {
                             //incomingMessage = Encoding.Default.GetString(buffer);
                             incomingMessage = incomingMessage.Substring(0, incomingMessage.IndexOf("\0\0"));
+                            challenge = incomingMessage;
                             string password = passwordLogin.Text;
                             byte[] passwordHash = hashWithSHA256(password);
                             int halfLength = passwordHash.Length / 2;
@@ -159,8 +167,8 @@ namespace cs432_Project_Client
 
                             string str = Encoding.Default.GetString(hmac);
                             str = "/H" + str;
-                            hmac = Encoding.Default.GetBytes(str);
-                            clientSocket.Send(hmac);
+                            byte[] bffr = Encoding.Default.GetBytes(str);
+                            clientSocket.Send(bffr);
                         }
                         catch
                         {
@@ -171,24 +179,90 @@ namespace cs432_Project_Client
                     {
                         try
                         {
-                            byte[] arr = Encoding.Default.GetBytes(incomingMessage);
-                            string msg = "success";
-                            if (verifyWithRSA(msg, 3072, RSAPublicKey3072_verification, arr))
+
+                            string unsigned = incomingMessage.Substring(0, incomingMessage.IndexOf("|||"));
+                            string signed = incomingMessage.Substring(incomingMessage.IndexOf("|||") + 3);
+
+                            byte[] arr = Encoding.Default.GetBytes(signed);
+                            //string msg = "success";
+                            try
                             {
-                                logs.AppendText("Login Successfull\n");
-                                loginButton.Enabled = true;
-                                incomingMessage = incomingMessage.Substring(2);
-                                string sessionKey1 = incomingMessage.Substring(0, incomingMessage.IndexOf("/"));
-                                string encryptedsessionKeyAuth = incomingMessage.Substring(incomingMessage.IndexOf("/"));
+                                verifyWithRSA(unsigned, 3072, RSAPublicKey3072_verification, arr);
+                                string result = unsigned.Substring(0, incomingMessage.IndexOf("///"));
+                                if (result == "success")
+                                {
+                                    logs.AppendText("Login Successfull\n");
+                                    loginButton.Enabled = true;
+                                    unsigned = unsigned.Substring(unsigned.IndexOf("///") + 3);
+                                    //incomingMessage = incomingMessage.Substring(2);
+                                    string sessionKey1 = unsigned.Substring(0, unsigned.IndexOf("///"));
+                                    string sessionKey2 = unsigned.Substring(unsigned.IndexOf("///") + 3);
+                                    byte[] byteChallenge = Encoding.Default.GetBytes(challenge);
+
+                                    sessionKeyEnc = decryptWithAES128(sessionKey1, halfHash, byteChallenge);
+                                    sessionKeyAuth = decryptWithAES128(sessionKey2, halfHash, byteChallenge);
+
+                                    //sessionKey1 = Encoding.Default.GetString(sessionKeyEnc);
+                                    //sessionKey2 = Encoding.Default.GetString(sessionKeyAuth);
+
+
+                                    messageBox.Enabled = true;
+                                    messageButton.Enabled = true;
+
+                                }
+                                else
+                                {
+                                    logs.AppendText("Login Failed\n");
+                                }
+
                             }
-                            else
+                            catch
+                            {
                                 logs.AppendText("Login Failed\n");
+                            }
+                            // if (verifyWithRSA(unsigned, 3072, RSAPublicKey3072_verification, arr))
+                            // {
+                            //     logs.AppendText("Login Successfull\n");
+                            //     loginButton.Enabled = true;
+                            //     incomingMessage = incomingMessage.Substring(2);
+                            //     string sessionKey1 = incomingMessage.Substring(0, incomingMessage.IndexOf("///"));
+                            //     string encryptedsessionKeyAuth = incomingMessage.Substring(incomingMessage.IndexOf("///") + 1);
+                            // }
+                            // else
+                            //     logs.AppendText("Login Failed\n");
                         }
                         catch
                         {
                             logs.AppendText("Verification Failed\n");
                         }
                     }
+                    else if (messageCode == "/B")
+                    {
+                        incomingMessage = incomingMessage.Substring(0, incomingMessage.IndexOf("\0"));
+
+                        string encryptedMsg = incomingMessage.Substring(0, incomingMessage.IndexOf("///"));
+                        string hmacMsg = incomingMessage.Substring(incomingMessage.IndexOf("///") + 3);
+
+                        try
+                        {
+                            byte[] challengeByte = Encoding.Default.GetBytes(challenge);
+                            byte[] decryptedMsg = decryptWithAES128(encryptedMsg, sessionKeyEnc, challengeByte);
+
+                            byte[] hmac = applyHMACwithSHA256(encryptedMsg, sessionKeyAuth);
+                            string hmacStr = Encoding.Default.GetString(hmac);
+                            if (hmacStr == hmacMsg)
+                            {
+                                string decryptedMsgStr = Encoding.Default.GetString(decryptedMsg);
+                                logs.AppendText(decryptedMsgStr + "\n");
+                            }
+                        }
+                        catch 
+                        {
+                            logs.AppendText("error occured.\n");
+                        }
+
+                    }
+
                 }
                 catch
                 {
@@ -198,6 +272,8 @@ namespace cs432_Project_Client
                         connectButton.Enabled = true;
                         enrollButton.Enabled = false;
                         loginButton.Enabled = false;
+                        messageBox.Enabled = false;
+                        messageButton.Enabled = false;
                     }
 
                     clientSocket.Close();
@@ -219,6 +295,7 @@ namespace cs432_Project_Client
 
             if (username != "" && password != "")
             {
+                userName = username;
                 Byte[] buffer = new Byte[386];
                 string msg = "/A" + username;
                 buffer = Encoding.Default.GetBytes(msg);
@@ -229,6 +306,41 @@ namespace cs432_Project_Client
                 logs.AppendText("Enter Valid Username/Password\n");
             }
         }
+        static byte[] decryptWithAES128(string input, byte[] key, byte[] IV)
+        {
+            // convert input string to byte array
+            byte[] byteInput = Encoding.Default.GetBytes(input);
+
+            // create AES object from System.Security.Cryptography
+            RijndaelManaged aesObject = new RijndaelManaged();
+            // since we want to use AES-128
+            aesObject.KeySize = 128;
+            // block size of AES is 128 bits
+            aesObject.BlockSize = 128;
+            // mode -> CipherMode.*
+            aesObject.Mode = CipherMode.CFB;
+            // feedback size should be equal to block size
+            // aesObject.FeedbackSize = 128;
+            // set the key
+            aesObject.Key = key;
+            // set the IV
+            aesObject.IV = IV;
+            // create an encryptor with the settings provided
+            ICryptoTransform decryptor = aesObject.CreateDecryptor();
+            byte[] result = null;
+
+            try
+            {
+                result = decryptor.TransformFinalBlock(byteInput, 0, byteInput.Length);
+            }
+            catch (Exception e) // if encryption fails
+            {
+                Console.WriteLine(e.Message); // display the cause
+            }
+
+            return result;
+        }
+
         private string readRSAPublicKey_encryption()
         {
             string RSAPublicKey3072;
@@ -308,6 +420,40 @@ namespace cs432_Project_Client
 
             return result;
         }
+        static byte[] encryptWithAES128(string input, byte[] key, byte[] IV)
+        {
+            // convert input string to byte array
+            byte[] byteInput = Encoding.Default.GetBytes(input);
+
+            // create AES object from System.Security.Cryptography
+            RijndaelManaged aesObject = new RijndaelManaged();
+            // since we want to use AES-128
+            aesObject.KeySize = 128;
+            // block size of AES is 128 bits
+            aesObject.BlockSize = 128;
+            // mode -> CipherMode.*
+            aesObject.Mode = CipherMode.CFB;
+            // feedback size should be equal to block size
+            aesObject.FeedbackSize = 128;
+            // set the key
+            aesObject.Key = key;
+            // set the IV
+            aesObject.IV = IV;
+            // create an encryptor with the settings provided
+            ICryptoTransform encryptor = aesObject.CreateEncryptor();
+            byte[] result = null;
+
+            try
+            {
+                result = encryptor.TransformFinalBlock(byteInput, 0, byteInput.Length);
+            }
+            catch (Exception e) // if encryption fails
+            {
+                Console.WriteLine(e.Message); // display the cause
+            }
+
+            return result;
+        }
         static bool verifyWithRSA(string input, int algoLength, string xmlString, byte[] signature)
         {
             // convert input string to byte array
@@ -337,8 +483,32 @@ namespace cs432_Project_Client
 
         private void changePassButton_Click(object sender, EventArgs e)
         {
-       
 
+
+        }
+
+        private void messageButton_Click(object sender, EventArgs e)
+        {
+            string message = messageBox.Text.ToString();
+            byte[] iv = Encoding.Default.GetBytes(challenge);
+
+            byte[] encMsg = encryptWithAES128(message, sessionKeyEnc, iv);
+            string encryptedMessage = Encoding.Default.GetString(encMsg);
+
+            byte[] hmac = applyHMACwithSHA256(encryptedMessage, sessionKeyAuth);
+            string hmacMessage = Encoding.Default.GetString(hmac);
+
+            string msgConcatanated = encryptedMessage + "///" + hmacMessage;
+            msgConcatanated = "/B" + userName + "///" + msgConcatanated;
+            byte[] buffer = Encoding.Default.GetBytes(msgConcatanated);
+
+            clientSocket.Send(buffer);
+        }
+        private byte[] addCodeToMessage(byte[] arr, string s)
+        {
+            string str = Encoding.Default.GetString(arr);
+            str = s + str;
+            return Encoding.Default.GetBytes(str);
         }
     }
 }
