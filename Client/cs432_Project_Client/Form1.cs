@@ -160,6 +160,7 @@ namespace cs432_Project_Client
                             challenge = incomingMessage;
                             string password = passwordLogin.Text;
                             byte[] passwordHash = hashWithSHA256(password);
+                            sha256 = passwordHash;
                             int halfLength = passwordHash.Length / 2;
                             halfHash = new byte[halfLength];
 
