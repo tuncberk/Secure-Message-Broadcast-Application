@@ -198,7 +198,7 @@ namespace cs432_Project_Server
                             //byte[] hmacMsg = Encoding.Default.GetBytes(incomingMessage);
 
                             string msg;
-                            if (hmacStr == incomingMessage && clients[usrName].socket == null)
+                            if (hmacStr == incomingMessage)
                             {
                                 msg = "success";
                                 //msg = "OK";

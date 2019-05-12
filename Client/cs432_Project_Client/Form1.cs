@@ -145,7 +145,8 @@ namespace cs432_Project_Client
                         if (verifyWithRSA(msg, 3072, RSAPublicKey3072_verification, arr))
                         {
                             logs.AppendText("Enrollment Successfull\n");
-                            loginButton.Enabled = true;
+                            if (loginButton.Enabled != true)
+                                loginButton.Enabled = true;
                         }
                         else
                             logs.AppendText("Enrollment Failed\n");
@@ -160,7 +161,7 @@ namespace cs432_Project_Client
                             string password = passwordLogin.Text;
                             byte[] passwordHash = hashWithSHA256(password);
                             int halfLength = passwordHash.Length / 2;
-                            byte[] halfHash = new byte[halfLength];
+                            halfHash = new byte[halfLength];
 
                             Array.Copy(passwordHash, halfLength, halfHash, 0, halfLength);
                             byte[] hmac = applyHMACwithSHA256(incomingMessage, halfHash);
@@ -192,7 +193,7 @@ namespace cs432_Project_Client
                                 if (result == "success")
                                 {
                                     logs.AppendText("Login Successfull\n");
-                                    loginButton.Enabled = true;
+                                    loginButton.Enabled = false;
                                     unsigned = unsigned.Substring(unsigned.IndexOf("///") + 3);
                                     //incomingMessage = incomingMessage.Substring(2);
                                     string sessionKey1 = unsigned.Substring(0, unsigned.IndexOf("///"));
@@ -256,7 +257,7 @@ namespace cs432_Project_Client
                                 logs.AppendText(decryptedMsgStr + "\n");
                             }
                         }
-                        catch 
+                        catch
                         {
                             logs.AppendText("error occured.\n");
                         }
@@ -295,6 +296,10 @@ namespace cs432_Project_Client
 
             if (username != "" && password != "")
             {
+                string pass = passwordLogin.Text;
+                sha256 = hashWithSHA256(pass);
+
+
                 userName = username;
                 Byte[] buffer = new Byte[386];
                 string msg = "/A" + username;
